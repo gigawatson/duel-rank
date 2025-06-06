@@ -15,29 +15,53 @@
             <span class="text-xl text-white">📋</span>
           </div>
           <div>
-            <h2 class="text-xl font-bold text-gray-800">{{ currentList?.name || 'No List Selected' }}</h2>
-            <p class="text-sm text-gray-600">
-              {{ currentList?.items.length || 0 }} items • 
-              {{ currentList?.games.length || 0 }} comparisons •
-              <span class="text-gray-500">{{ formatDate(currentList?.createdAt) }}</span>
-            </p>
+            <!-- Edit Mode -->
+            <div v-if="editingListName" class="space-y-2">
+              <input 
+                ref="editListInput"
+                v-model="editListName.value.value"
+                @keyup.enter="handleSaveListEdit"
+                @keyup.esc="cancelListEdit"
+                @blur="handleSaveListEdit"
+                class="text-xl font-bold bg-white border border-blue-300 rounded px-2 py-1 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': editListName.error }"
+              />
+              <div class="flex items-center space-x-2">
+                <button 
+                  @click="handleSaveListEdit"
+                  class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                >
+                  Save
+                </button>
+                <button 
+                  @click="cancelListEdit"
+                  class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+              <!-- Edit Validation Error -->
+              <p v-if="editListName.error && editListName.error.value" class="text-sm text-red-600 flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{{ editListName.error?.value }}</span>
+              </p>
+            </div>
+            <!-- View Mode -->
+            <div v-else>
+              <h2 class="text-xl font-bold text-gray-800">{{ currentList?.name || 'No List Selected' }}</h2>
+              <p class="text-sm text-gray-600">
+                {{ currentList?.items.length || 0 }} items • 
+                {{ currentList?.games.length || 0 }} comparisons •
+                <span class="text-gray-500">{{ formatDate(currentList?.createdAt) }}</span>
+              </p>
+            </div>
           </div>
         </div>
 
         <!-- List Actions -->
         <div class="flex items-center space-x-2">
-          <button 
-            v-if="lists.length > 1"
-            @click.stop="showListSelector = !showListSelector"
-            class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
-            title="Switch List"
-          >
-            <span class="text-sm font-medium text-gray-700">Switch</span>
-            <svg class="w-4 h-4 text-gray-500" :class="{ 'rotate-180': showListSelector }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          
           <div class="relative">
             <button 
               @click.stop="showActions = !showActions"
@@ -52,8 +76,16 @@
             <!-- Actions Dropdown -->
             <div v-if="showActions" @click.stop class="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
               <button 
-                @click="handleResetList"
+                @click="handleEditList"
                 class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center space-x-2"
+                :disabled="lists.length === 0"
+              >
+                <span class="text-blue-500">✏️</span>
+                <span>Edit List Name</span>
+              </button>
+              <button 
+                @click="handleResetList"
+                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                 :disabled="lists.length === 0"
               >
                 <span class="text-yellow-500">🔄</span>
@@ -62,7 +94,6 @@
               <button 
                 @click="handleDeleteList"
                 class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg flex items-center space-x-2"
-                :disabled="lists.length <= 1"
               >
                 <span class="text-red-500">🗑️</span>
                 <span>Delete List</span>
@@ -72,104 +103,84 @@
         </div>
       </div>
 
-      <!-- List Selector Dropdown -->
-      <div v-if="showListSelector && lists.length > 1" class="mt-4 pt-4 border-t border-blue-200">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Switch to:</label>
-        <div class="grid gap-2">
-          <button
-            v-for="list in lists"
-            :key="list.id"
-            @click="handleSwitchList(list.id)"
-            class="p-3 text-left border rounded-lg transition-colors hover:bg-white"
-            :class="list.id === selectedListId ? 'border-blue-300 bg-white shadow-sm' : 'border-gray-200 hover:border-gray-300'"
-          >
-            <span class="font-medium text-gray-800 block">{{ list.name }}</span>
-            <span class="text-xs text-gray-500 block">
-              {{ list.items.length }} items • {{ formatDate(list.createdAt) }}
-            </span>
-          </button>
-        </div>
-      </div>
     </div>
 
-    <!-- Create New List -->
+    <!-- List Management -->
     <div class="bg-white border border-gray-200 rounded-xl p-6">
-      <div class="flex items-center space-x-3 mb-4">
-        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-          <span class="text-lg text-white">➕</span>
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+            <span class="text-lg text-white">📚</span>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800">Your Lists</h3>
+            <p class="text-sm text-gray-600">Manage your ranking lists</p>
+          </div>
         </div>
-        <div>
-          <h3 class="font-semibold text-gray-800">Create New List</h3>
-          <p class="text-sm text-gray-600">Add another ranking list to your collection</p>
+        <div v-if="lists.length > 0" class="text-sm text-gray-500">
+          {{ lists.length }} list{{ lists.length === 1 ? '' : 's' }}
         </div>
       </div>
 
-      <form @submit.prevent="handleCreateList" class="space-y-3">
-        <div class="relative">
+      <!-- Existing Lists -->
+      <div v-if="lists.length > 0" class="space-y-3 mb-6">
+        <div
+          v-for="list in lists"
+          :key="list.id"
+          @click="list.id !== selectedListId ? handleSwitchList(list.id) : null"
+          class="p-4 border rounded-lg transition-all duration-200"
+          :class="[
+            list.id === selectedListId 
+              ? 'border-blue-300 bg-blue-50 ring-1 ring-blue-200' 
+              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer'
+          ]"
+        >
+          <div class="font-medium text-gray-800 flex items-center space-x-2">
+            <span>{{ list.name }}</span>
+            <span v-if="list.id === selectedListId" class="px-2 py-1 text-xs bg-blue-600 text-white rounded-md">Active</span>
+          </div>
+          <div class="text-sm text-gray-500 mt-1">
+            {{ list.items.length }} items • {{ list.games.length }} comparisons • {{ formatDate(list.createdAt) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Create New List -->
+      <div class="border-t pt-6">
+        <h4 class="font-medium text-gray-800 mb-3 flex items-center space-x-2">
+          <span class="text-green-600">➕</span>
+          <span>Create New List</span>
+        </h4>
+        
+        <form @submit.prevent="handleCreateList" class="space-y-3">
           <input 
             ref="newListInput"
             v-model="newListName.value.value" 
             @input="clearListError"
             placeholder="e.g., Best Restaurants, Top Movies, Favorite Books..." 
-            class="w-full p-4 border border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-colors"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-colors"
             :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': newListName.error }"
           />
-        </div>
-        
-        <button 
-          type="submit" 
-          class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-          :disabled="!newListName.value.value.trim()"
-        >
-          <span>Create List</span>
+          
+          <button 
+            type="submit" 
+            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+            :disabled="!newListName.value.value.trim()"
+          >
+            <span>Create List</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+          </button>
+        </form>
+
+        <!-- Validation Error Display -->
+        <p v-if="newListName.error && newListName.error.value && newListName.error.value.length > 0" class="text-sm text-red-600 mt-2 flex items-center space-x-1">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-        </button>
-      </form>
-
-      <!-- Validation Error Display -->
-      <p v-if="newListName.error && newListName.error.value && newListName.error.value.length > 0" class="text-sm text-red-600 mt-2 flex items-center space-x-1">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span>{{ newListName.error?.value }}</span>
-      </p>
-    </div>
-
-    <!-- List Collection Overview -->
-    <div v-if="lists.length > 1" class="bg-gray-50 border border-gray-200 rounded-xl p-6">
-      <h3 class="font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
-        <span>Your Lists ({{ lists.length }})</span>
-      </h3>
-      
-      <div class="grid gap-3">
-        <div
-          v-for="list in lists"
-          :key="list.id"
-          class="flex items-center justify-between p-3 bg-white border rounded-lg"
-          :class="list.id === selectedListId ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-200'"
-        >
-          <div class="flex-1">
-            <div class="font-medium text-gray-800">{{ list.name }}</div>
-            <div class="text-xs text-gray-500">
-              {{ list.items.length }} items • {{ list.games.length }} comparisons
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button
-              v-if="list.id !== selectedListId"
-              @click="handleSwitchList(list.id)"
-              class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
-            >
-              Select
-            </button>
-            <span v-else class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-md">
-              Active
-            </span>
-          </div>
-        </div>
+          <span>{{ newListName.error?.value }}</span>
+        </p>
       </div>
     </div>
   </div>
@@ -186,14 +197,16 @@ const store = useListStore()
 
 // Template refs
 const newListInput = ref<HTMLInputElement>()
+const editListInput = ref<HTMLInputElement>()
 
 // Local state
 const selectedListId = ref(store.activeListId)
-const showListSelector = ref(false)
 const showActions = ref(false)
+const editingListName = ref(false)
 
 // Form handling with validation
 const newListName = useValidatedInput('', validateListName)
+const editListName = useValidatedInput('', validateListName)
 
 // Computed properties
 const lists = computed(() => store.allLists)
@@ -230,7 +243,6 @@ const clearListError = () => {
 const handleSwitchList = (listId: string) => {
   store.switchList(listId)
   selectedListId.value = listId
-  showListSelector.value = false
 }
 
 /**
@@ -257,6 +269,59 @@ const handleDeleteList = () => {
 }
 
 /**
+ * Start editing the current list name
+ */
+const handleEditList = async () => {
+  showActions.value = false
+  editingListName.value = true
+  editListName.reset()
+  editListName.value.value = currentList.value?.name || ''
+  
+  // Focus the edit input after Vue updates the DOM
+  await nextTick()
+  editListInput.value?.focus()
+  editListInput.value?.select()
+}
+
+/**
+ * Cancel editing list name
+ */
+const cancelListEdit = () => {
+  editingListName.value = false
+  editListName.reset()
+}
+
+/**
+ * Save the edited list name
+ */
+const handleSaveListEdit = async () => {
+  const trimmedValue = editListName.value.value.trim()
+  
+  // Don't save if value is empty
+  if (!trimmedValue) {
+    cancelListEdit()
+    return
+  }
+  
+  // Check if name actually changed
+  if (currentList.value && currentList.value.name === trimmedValue) {
+    // No change, just cancel edit mode
+    cancelListEdit()
+    return
+  }
+  
+  // Validate the new name
+  const otherLists = store.allLists.filter(list => list.id !== selectedListId.value)
+  const isValid = editListName.validate(trimmedValue, otherLists)
+  
+  if (isValid) {
+    store.editListName(selectedListId.value, trimmedValue)
+    cancelListEdit()
+  }
+  // If not valid, stay in edit mode to show error
+}
+
+/**
  * Format date for display
  */
 const formatDate = (timestamp?: number): string => {
@@ -272,9 +337,9 @@ const formatDate = (timestamp?: number): string => {
 const closeDropdowns = (event: Event) => {
   const target = event.target as HTMLElement
   if (!target.closest('.relative')) {
-    showListSelector.value = false
     showActions.value = false
   }
+  // Don't close edit mode when clicking outside
 }
 
 // Watch for store changes and sync local state

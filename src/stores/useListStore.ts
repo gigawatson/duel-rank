@@ -50,9 +50,7 @@ export const useListStore = defineStore('list', {
                 if (this.lists.length > 0) {
                     this.activeListId = this.lists[0].id
                 } else {
-                    const fallback = createEmptyList('Default')
-                    this.lists.push(fallback)
-                    this.activeListId = fallback.id
+                    this.activeListId = ''
                 }
             }
         },
@@ -63,6 +61,13 @@ export const useListStore = defineStore('list', {
                 const newList = createEmptyList(name)
                 this.lists[index] = newList
                 this.activeListId = newList.id
+            }
+        },
+        editListName(id: string, newName: string) {
+            const list = this.lists.find(l => l.id === id)
+            if (list) {
+                list.name = newName
+                list.updatedAt = Date.now()
             }
         },
         addItem(label: string) {

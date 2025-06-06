@@ -6,64 +6,66 @@
 -->
 <template>
   <div class="space-y-6">
-    <!-- Add New Item -->
+    <!-- Items Management -->
     <div class="bg-white border border-gray-200 rounded-xl p-6">
-      <div class="flex items-center space-x-3 mb-4">
-        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-          <span class="text-lg text-white">✨</span>
-        </div>
-        <div>
-          <h3 class="font-semibold text-gray-800">Add Items to Compare</h3>
-          <p class="text-sm text-gray-600">Add items you want to rank and compare</p>
-        </div>
-      </div>
-
-      <form @submit.prevent="handleAddItem" class="space-y-3">
-        <div class="relative">
-          <input 
-            ref="itemInput"
-            v-model="newItemLabel.value.value" 
-            @input="clearItemError"
-            placeholder="e.g., Pizza, Burger, Sushi..." 
-            class="w-full p-4 border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-colors"
-            :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': newItemLabel.error }"
-          />
-        </div>
-        
-        <button 
-          type="submit" 
-          class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-          :disabled="!newItemLabel.value.value.trim()"
-        >
-          <span>Add Item</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-        </button>
-      </form>
-
-      <!-- Validation Error Display -->
-      <p v-if="newItemLabel.error && newItemLabel.error.value && newItemLabel.error.value.length > 0" class="text-sm text-red-600 mt-2 flex items-center space-x-1">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span>{{ newItemLabel.error?.value }}</span>
-      </p>
-    </div>
-
-    <!-- Items List -->
-    <div v-if="items.length > 0" class="bg-white border border-gray-200 rounded-xl p-6">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
             <span class="text-lg text-white">📝</span>
           </div>
           <div>
-            <h3 class="font-semibold text-gray-800">Your Items ({{ items.length }})</h3>
-            <p class="text-sm text-gray-600">Click edit to modify or remove to delete</p>
+            <h3 class="font-semibold text-gray-800">Items to Compare</h3>
+            <p class="text-sm text-gray-600">Add and manage items for ranking</p>
           </div>
         </div>
+        <div v-if="items.length > 0" class="text-sm text-gray-500">
+          {{ items.length }} item{{ items.length === 1 ? '' : 's' }}
+        </div>
       </div>
+
+      <!-- Add New Item Form -->
+      <div class="mb-6">
+        <form @submit.prevent="handleAddItem" class="space-y-3">
+          <div class="flex space-x-3">
+            <div class="flex-1">
+              <input 
+                ref="itemInput"
+                v-model="newItemLabel.value.value" 
+                @input="clearItemError"
+                placeholder="e.g., Pizza, Burger, Sushi..." 
+                class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-colors"
+                :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': newItemLabel.error }"
+              />
+            </div>
+            <button 
+              type="submit" 
+              class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+              :disabled="!newItemLabel.value.value.trim()"
+            >
+              <span>Add</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <!-- Validation Error Display -->
+        <p v-if="newItemLabel.error && newItemLabel.error.value && newItemLabel.error.value.length > 0" class="text-sm text-red-600 mt-2 flex items-center space-x-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ newItemLabel.error?.value }}</span>
+        </p>
+      </div>
+
+      <!-- Items List -->
+      <div v-if="items.length > 0">
+        <div class="border-t pt-6">
+          <h4 class="font-medium text-gray-800 mb-4 flex items-center space-x-2">
+            <span class="text-blue-600">📋</span>
+            <span>Current Items ({{ items.length }})</span>
+          </h4>
 
         <TransitionGroup name="item-list" tag="div" class="space-y-3">
           <div
@@ -143,29 +145,34 @@
               </div>
             </div>
           </div>
-        </TransitionGroup>
-        
-        <!-- Edit Validation Error -->
-        <p v-if="editItemLabel.error && editItemLabel.error.value && editItemLabel.error.value.length > 0" class="text-sm text-red-600 mt-3 flex items-center space-x-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>{{ editItemLabel.error?.value }}</span>
-        </p>
+          </TransitionGroup>
+          
+          <!-- Edit Validation Error -->
+          <p v-if="editItemLabel.error && editItemLabel.error.value && editItemLabel.error.value.length > 0" class="text-sm text-red-600 mt-3 flex items-center space-x-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ editItemLabel.error?.value }}</span>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div v-else class="border-t pt-6">
+        <div class="text-center py-8">
+          <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
+            <span class="text-2xl text-white">📝</span>
+          </div>
+          <h4 class="text-lg font-semibold text-gray-700 mb-2">No items yet</h4>
+          <p class="text-gray-500 mb-4">Add at least 2 items to start comparing and ranking</p>
+          <div class="flex items-center justify-center space-x-2 text-sm text-gray-400">
+            <span>💡</span>
+            <span>Tip: Add items like "Pizza", "Burger", "Sushi" to rank your favorites</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-else class="bg-gradient-to-r from-gray-50 to-blue-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-      <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
-        <span class="text-2xl text-white">📝</span>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-700 mb-2">No items yet</h3>
-      <p class="text-gray-500 mb-4">Add at least 2 items to start comparing and ranking</p>
-      <div class="flex items-center justify-center space-x-2 text-sm text-gray-400">
-        <span>💡</span>
-        <span>Tip: Add items like "Pizza", "Burger", "Sushi" to rank your favorites</span>
-      </div>
-    </div>
 
     <!-- Comparison Readiness Indicator -->
     <div v-if="items.length >= 2" class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
@@ -327,6 +334,7 @@ const formatItemDate = (timestamp: number): string => {
 }
 </script>
 
+<!--suppress CssUnusedSymbol -->
 <style scoped>
 /* Item list transition animations */
 .item-list-enter-active,

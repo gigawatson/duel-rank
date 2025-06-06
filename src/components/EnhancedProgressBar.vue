@@ -234,9 +234,7 @@ const efficiencyScore = computed(() => {
   
   // Theoretical minimum comparisons needed (roughly n-1 for n items)
   const theoreticalMinimum = Math.max(1, props.itemCount - 1)
-  const efficiency = Math.min(100, Math.round((theoreticalMinimum / Math.max(1, props.completed)) * 100))
-  
-  return efficiency
+  return Math.min(100, Math.round((theoreticalMinimum / Math.max(1, props.completed)) * 100))
 })
 
 /**

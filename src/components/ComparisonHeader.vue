@@ -81,20 +81,16 @@
             v-for="list in lists"
             :key="list.id"
             @click="handleSwitchList(list.id)"
-            class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+            class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors group flex items-center justify-between"
             :class="list.id === selectedListId ? 'bg-blue-50 border border-blue-200' : ''"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex-1 min-w-0">
-                <div class="font-medium text-gray-900 truncate">{{ list.name }}</div>
-                <div class="text-xs text-gray-500">
-                  {{ list.items.length }} items • {{ list.games.length }} comparisons
-                </div>
-              </div>
-              <div v-if="list.id === selectedListId" class="ml-2">
-                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-              </div>
-            </div>
+            <span class="flex-1 min-w-0">
+              <span class="font-medium text-gray-900 truncate block">{{ list.name }}</span>
+              <span class="text-xs text-gray-500 block">
+                {{ list.items.length }} items • {{ list.games.length }} comparisons
+              </span>
+            </span>
+            <span v-if="list.id === selectedListId" class="ml-2 w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
           </button>
         </div>
       </div>
