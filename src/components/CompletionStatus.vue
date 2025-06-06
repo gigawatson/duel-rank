@@ -31,7 +31,7 @@
     <template v-else>
       <p>🎉 100% fully ranked!</p>
       <p class="text-sm text-green-600">
-        All items have been directly compared or their positions inferred.
+        All items have been directly compared for complete accuracy.
       </p>
     </template>
   </div>

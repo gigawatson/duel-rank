@@ -227,7 +227,7 @@ export function calculateRanking(list: List): RankingEntry[] {
     
     return result.map((id, i) => ({
         id,
-        rank: i,
+        rank: i + 1,
         confidence: computeConfidence(id, graph, ids),
     }))
 }

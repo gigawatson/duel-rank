@@ -212,6 +212,29 @@ export function useComparison() {
     updateGame()
   }
 
+  /**
+   * Undoes the last comparison and updates the game state
+   */
+  const undoLastComparison = () => {
+    const success = store.undoLastAction()
+    if (success) {
+      // Remove the last log entry
+      if (log.value.length > 0) {
+        log.value.shift()
+      }
+      // Update the current game
+      updateGame()
+    }
+    return success
+  }
+
+  /**
+   * Checks if undo is available
+   */
+  const canUndo = computed(() => {
+    return store.lastAction !== null && store.lastAction.type === 'comparison'
+  })
+
   // Watch for list changes and update game accordingly
   watch(() => store.activeListId, () => {
     if (comparing.value) {
@@ -227,6 +250,7 @@ export function useComparison() {
     log,
     
     // Computed
+    canUndo,
     list,
     ranking,
     remainingPairs,
@@ -239,6 +263,7 @@ export function useComparison() {
     skip,
     toggleComparing,
     startRefining,
+    undoLastComparison,
     labelFor,
     isDirectlyConfirmed
   }

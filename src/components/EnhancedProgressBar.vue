@@ -179,9 +179,10 @@
         </div>
       </div>
       
-      <div class="flex justify-center space-x-8 mt-2 text-xs text-gray-500">
-        <span>Completion</span>
-        <span>Confidence</span>
+      <div class="flex justify-center mt-2 text-xs text-gray-500">
+        <div class="w-24 text-center">Completion</div>
+        <div class="w-8"></div>
+        <div class="w-24 text-center">Confidence</div>
       </div>
     </div>
   </div>

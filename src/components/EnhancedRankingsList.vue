@@ -16,15 +16,24 @@
         Live Ranking
       </h2>
       
-      <div class="flex items-center space-x-2 text-sm text-gray-500">
-        <div class="flex items-center space-x-1">
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span>Confirmed</span>
+      <div class="flex items-center space-x-4">
+        <!-- Legend -->
+        <div class="flex items-center space-x-2 text-sm text-gray-500">
+          <div class="flex items-center space-x-1">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>Confirmed</span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <span>Inferred</span>
+          </div>
         </div>
-        <div class="flex items-center space-x-1">
-          <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-          <span>Inferred</span>
-        </div>
+        
+        <!-- Export Menu -->
+        <ExportMenu 
+          :list="list"
+          :get-label-fn="getLabel"
+        />
       </div>
     </div>
 
@@ -48,7 +57,7 @@
               class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md"
               :class="getRankBadgeClass(index)"
             >
-              {{ index + 1 }}
+              {{ entry.rank }}
             </div>
           </div>
 
@@ -122,7 +131,7 @@
           
           <!-- Tooltip on Hover -->
           <div class="absolute left-1/2 bottom-full mb-2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
-            Rank {{ index + 1 }} • {{ Math.round(entry.confidence * 100) }}% confidence • {{ getDetailedStatus(entry.id) }}
+            Rank {{ entry.rank }} • {{ Math.round(entry.confidence * 100) }}% confidence • {{ getDetailedStatus(entry.id) }}
           </div>
         </div>
       </TransitionGroup>
@@ -159,13 +168,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RankingEntry } from '../types'
+import type { RankingEntry, List } from '../types'
+import ExportMenu from './ExportMenu.vue'
 
 /**
  * Props for the EnhancedRankingsList component
  */
 interface Props {
   ranking: RankingEntry[]  // Array of ranking entries
+  list: List  // The complete list data for export
   getLabel: (id: string) => string  // Function to get display label for item ID
   isDirectlyConfirmed: (id: string) => boolean  // Function to check if item is directly confirmed
 }

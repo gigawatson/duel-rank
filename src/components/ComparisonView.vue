@@ -32,8 +32,10 @@
         v-if="currentGame"
         :game="currentGame"
         :get-label="labelFor"
+        :can-undo="canUndo"
         @choose="choose"
         @skip="skip"
+        @undo="undoLastComparison"
       />
 
       <!-- Completion Status -->
@@ -54,6 +56,7 @@
         <!-- Enhanced Rankings Display -->
         <EnhancedRankingsList 
           :ranking="ranking"
+          :list="list"
           :get-label="labelFor"
           :is-directly-confirmed="isDirectlyConfirmed"
         />
@@ -76,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useComparison } from '../composables/useComparison'
 import ComparisonHeader from './ComparisonHeader.vue'
 import EnhancedProgressBar from './EnhancedProgressBar.vue'
@@ -98,22 +101,52 @@ const {
   list,
   hasAnyComparisons,
   isComparisonComplete,
+  canUndo,
   choose,
   skip,
   startRefining,
+  undoLastComparison,
   labelFor,
   isDirectlyConfirmed,
   toggleComparing
 } = useComparison()
 
+// Keyboard shortcuts
+const handleKeyDown = (event: KeyboardEvent) => {
+  // Only handle shortcuts when we have a current game
+  if (!currentGame.value) return
+  
+  // Prevent shortcuts when typing in inputs
+  const target = event.target as HTMLElement
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
+  
+  switch (event.key.toLowerCase()) {
+    case 'u':
+      if (canUndo.value) {
+        event.preventDefault()
+        undoLastComparison()
+      }
+      break
+  }
+}
+
 // Auto-start comparison when this component is mounted
-import { onMounted } from 'vue'
-onMounted(() => {
+const autoStart = () => {
   if (!comparing.value) {
     toggleComparing()
   }
-})
+}
 
 // Local computed properties
 const itemCount = computed(() => list.value.items.length)
+
+// Set up keyboard listeners and auto-start
+onMounted(() => {
+  document.addEventListener('keydown', handleKeyDown)
+  autoStart()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyDown)
+})
 </script>

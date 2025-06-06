@@ -18,7 +18,8 @@ function createEmptyList(name: string): List {
 export const useListStore = defineStore('list', {
     state: () => ({
         lists: useStorage<List[]>(STORAGE_KEYS.LISTS, []),
-        activeListId: useStorage<string>(STORAGE_KEYS.ACTIVE_LIST_ID, '')
+        activeListId: useStorage<string>(STORAGE_KEYS.ACTIVE_LIST_ID, ''),
+        lastAction: null as { type: 'comparison', gameId: string, previousState?: any } | null
     }),
     getters: {
         list(state): List {
@@ -99,20 +100,57 @@ export const useListStore = defineStore('list', {
             const existing = list.games.find(g =>
                 (g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)
             )
+            
+            // Store the previous state for undo
+            const gameId = `game-${a}-${b}`
+            const previousState = existing ? { ...existing } : null
+            
             const game: Game = {
-                id: `game-${a}-${b}`,
+                id: gameId,
                 itemA: a,
                 itemB: b,
                 winner,
                 skipped: result === 'skip',
                 timestamp: Date.now()
             }
+            
             if (existing) {
                 Object.assign(existing, game)
             } else {
                 list.games.push(game)
             }
+            
             list.updatedAt = Date.now()
+            
+            // Track this action for undo
+            this.lastAction = {
+                type: 'comparison',
+                gameId,
+                previousState
+            }
+        },
+        undoLastAction() {
+            if (!this.lastAction || this.lastAction.type !== 'comparison') {
+                return false
+            }
+            
+            const list = this.list
+            const { gameId, previousState } = this.lastAction
+            
+            if (previousState) {
+                // Restore the previous state of the game
+                const gameIndex = list.games.findIndex(g => g.id === gameId)
+                if (gameIndex !== -1) {
+                    list.games[gameIndex] = { ...previousState }
+                }
+            } else {
+                // Remove the game entirely (it was newly created)
+                list.games = list.games.filter(g => g.id !== gameId)
+            }
+            
+            list.updatedAt = Date.now()
+            this.lastAction = null
+            return true
         }
     }
 })
