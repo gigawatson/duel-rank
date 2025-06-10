@@ -11,7 +11,8 @@ function createEmptyList(name: string): List {
         createdAt: now,
         updatedAt: now,
         items: [],
-        games: []
+        games: [],
+        log: []
     }
 }
 
@@ -28,10 +29,21 @@ export const useListStore = defineStore('list', {
                 return createEmptyList('No List')
             }
             // Find active list or fallback to first list
-            return state.lists.find(l => l.id === state.activeListId) ?? state.lists[0]
+            const list = state.lists.find(l => l.id === state.activeListId) ?? state.lists[0]
+            // Ensure backwards compatibility for lists without log property
+            if (!list.log) {
+                list.log = []
+            }
+            return list
         },
         allLists(state): List[] {
-            return state.lists
+            // Ensure backwards compatibility for lists without log property
+            return state.lists.map(list => {
+                if (!list.log) {
+                    list.log = []
+                }
+                return list
+            })
         }
     },
     actions: {
@@ -84,15 +96,27 @@ export const useListStore = defineStore('list', {
             const list = this.list
             const item = list.items.find(i => i.id === id)
             if (item) {
+                const oldLabel = item.label
                 item.label = newLabel
+                // Update log entries to reflect the new label
+                list.log = list.log.map(entry => 
+                    entry.replace(new RegExp(oldLabel, 'g'), newLabel)
+                )
                 list.updatedAt = Date.now()
             }
         },
         removeItem(id: string) {
             const list = this.list
-            list.items = list.items.filter(i => i.id !== id)
-            list.games = list.games.filter(g => g.itemA !== id && g.itemB !== id)
-            list.updatedAt = Date.now()
+            const item = list.items.find(i => i.id === id)
+            if (item) {
+                // Remove the item
+                list.items = list.items.filter(i => i.id !== id)
+                // Remove games involving this item
+                list.games = list.games.filter(g => g.itemA !== id && g.itemB !== id)
+                // Remove log entries involving this item
+                list.log = list.log.filter(entry => !entry.includes(item.label))
+                list.updatedAt = Date.now()
+            }
         },
         recordGame(a: string, b: string, result: 'A' | 'B' | 'skip') {
             const winner = result === 'A' ? a : result === 'B' ? b : undefined
@@ -151,6 +175,23 @@ export const useListStore = defineStore('list', {
             list.updatedAt = Date.now()
             this.lastAction = null
             return true
+        },
+        addLogEntry(entry: string) {
+            const list = this.list
+            list.log.unshift(entry)
+            list.updatedAt = Date.now()
+        },
+        removeLastLogEntry() {
+            const list = this.list
+            if (list.log.length > 0) {
+                list.log.shift()
+                list.updatedAt = Date.now()
+            }
+        },
+        clearLog() {
+            const list = this.list
+            list.log = []
+            list.updatedAt = Date.now()
         }
     }
 })

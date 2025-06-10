@@ -20,7 +20,7 @@
       <button 
         v-if="!refining" 
         @click="$emit('startRefining')" 
-        class="text-sm text-blue-700 underline hover:text-blue-900 transition-colors"
+        class="text-sm text-blue-700 underline hover:text-blue-900 transition-colors cursor-pointer"
       >
         → Continue refining ranking
       </button>

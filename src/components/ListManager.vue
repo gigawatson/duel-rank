@@ -29,13 +29,13 @@
               <div class="flex items-center space-x-2">
                 <button 
                   @click="handleSaveListEdit"
-                  class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                  class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors cursor-pointer"
                 >
                   Save
                 </button>
                 <button 
                   @click="cancelListEdit"
-                  class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -65,7 +65,7 @@
           <div class="relative">
             <button 
               @click.stop="showActions = !showActions"
-              class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               title="List Actions"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@
             <div v-if="showActions" @click.stop class="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
               <button 
                 @click="handleEditList"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center space-x-2"
+                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center space-x-2 cursor-pointer"
                 :disabled="lists.length === 0"
               >
                 <span class="text-blue-500">✏️</span>
@@ -85,7 +85,7 @@
               </button>
               <button 
                 @click="handleResetList"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 cursor-pointer"
                 :disabled="lists.length === 0"
               >
                 <span class="text-yellow-500">🔄</span>
@@ -93,7 +93,7 @@
               </button>
               <button 
                 @click="handleDeleteList"
-                class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg flex items-center space-x-2"
+                class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg flex items-center space-x-2 cursor-pointer"
               >
                 <span class="text-red-500">🗑️</span>
                 <span>Delete List</span>
@@ -164,7 +164,7 @@
           
           <button 
             type="submit" 
-            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2 cursor-pointer"
             :disabled="!newListName.value.value.trim()"
           >
             <span>Create List</span>
@@ -347,10 +347,13 @@ watch(() => store.activeListId, (newId) => {
   selectedListId.value = newId
 })
 
-// Auto-focus the new list input when component mounts
+// Auto-focus the new list input when component mounts (only if no lists exist)
 onMounted(async () => {
   await nextTick()
-  newListInput.value?.focus()
+  // Only focus the new list input if no lists exist yet
+  if (lists.value.length === 0) {
+    newListInput.value?.focus()
+  }
   
   // Add click listener to close dropdowns
   document.addEventListener('click', closeDropdowns)

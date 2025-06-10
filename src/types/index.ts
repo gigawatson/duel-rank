@@ -20,6 +20,7 @@ export interface List {
   updatedAt: number
   items: Item[]
   games: Game[]
+  log: string[]
 }
 
 export interface RankingEntry {

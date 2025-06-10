@@ -39,7 +39,7 @@
             </div>
             <button 
               type="submit" 
-              class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+              class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2 cursor-pointer"
               :disabled="!newItemLabel.value.value.trim()"
             >
               <span>Add</span>
@@ -94,7 +94,7 @@
               <div class="flex items-center space-x-2">
                 <button 
                   @click="handleSaveEdit(item.id)"
-                  class="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center space-x-1"
+                  class="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   title="Save changes"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,7 +104,7 @@
                 </button>
                 <button 
                   @click="cancelEdit"
-                  class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-1"
+                  class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   title="Cancel edit"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,7 +124,7 @@
               <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <button 
                   @click="startEdit(item.id, item.label)" 
-                  class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1"
+                  class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   :title="`Edit ${item.label}`"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +134,7 @@
                 </button>
                 <button 
                   @click="handleRemoveItem(item.id, item.label)" 
-                  class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-1"
+                  class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   :title="`Remove ${item.label}`"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, nextTick, onMounted } from 'vue'
 import { useListStore } from '../stores/useListStore'
 import { useValidatedInput } from '../composables/useFormValidation'
 import { validateItemName } from '../utils/validation'
@@ -332,6 +332,19 @@ const formatItemDate = (timestamp: number): string => {
   if (minutes > 0) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
   return 'just now'
 }
+
+/**
+ * Auto-focus the item input when component mounts, 
+ * especially when we have an empty list (just created)
+ */
+onMounted(async () => {
+  await nextTick()
+  // Focus the item input if the current list has no items
+  // This handles the case where user just created their first list
+  if (items.value.length === 0) {
+    itemInput.value?.focus()
+  }
+})
 </script>
 
 <!--suppress CssUnusedSymbol -->

@@ -17,12 +17,12 @@ export function useComparison() {
   const comparing = ref(false)
   const refining = ref(false)
   const currentGame = ref<[string, string] | null>(null)
-  const log = ref<string[]>([])
   
 
   // Computed properties
   const list = computed(() => store.list)
   const ranking = computed(() => calculateRanking(list.value))
+  const log = computed(() => list.value.log || [])
 
   /**
    * Calculates remaining pairs that need comparison
@@ -177,7 +177,7 @@ export function useComparison() {
     const result: GameResult = winner === a ? 'A' : 'B'
     
     store.recordGame(a, b, result)
-    log.value.unshift(`${labelFor(a)} vs ${labelFor(b)} → winner: ${labelFor(winner)}`)
+    store.addLogEntry(`${labelFor(a)} vs ${labelFor(b)} → winner: ${labelFor(winner)}`)
     updateGame()
   }
 
@@ -189,7 +189,7 @@ export function useComparison() {
     
     const [a, b] = currentGame.value
     store.recordGame(a, b, 'skip')
-    log.value.unshift(`${labelFor(a)} vs ${labelFor(b)} → skipped`)
+    store.addLogEntry(`${labelFor(a)} vs ${labelFor(b)} → skipped`)
     updateGame()
   }
 
@@ -219,9 +219,7 @@ export function useComparison() {
     const success = store.undoLastAction()
     if (success) {
       // Remove the last log entry
-      if (log.value.length > 0) {
-        log.value.shift()
-      }
+      store.removeLastLogEntry()
       // Update the current game
       updateGame()
     }
@@ -234,6 +232,13 @@ export function useComparison() {
   const canUndo = computed(() => {
     return store.lastAction !== null && store.lastAction.type === 'comparison'
   })
+
+  /**
+   * Clears the comparison log
+   */
+  const clearLog = () => {
+    store.clearLog()
+  }
 
   // Watch for list changes and update game accordingly
   watch(() => store.activeListId, () => {
@@ -264,6 +269,7 @@ export function useComparison() {
     toggleComparing,
     startRefining,
     undoLastComparison,
+    clearLog,
     labelFor,
     isDirectlyConfirmed
   }

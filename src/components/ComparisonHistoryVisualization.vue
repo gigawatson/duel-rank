@@ -8,14 +8,14 @@
   - Visual patterns in comparison decisions
 -->
 <template>
-  <div v-if="games.length > 0" class="bg-white border border-gray-200 rounded-lg p-4">
+  <div class="bg-white border border-gray-200 rounded-lg p-4">
     <div class="flex items-center justify-between mb-4">
       <h3 class="font-semibold text-gray-800 flex items-center">
         <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
         Comparison Network
       </h3>
       
-      <div class="flex items-center space-x-4 text-sm">
+      <div v-if="games.length > 0" class="flex items-center space-x-4 text-sm">
         <div class="flex items-center space-x-2">
           <div class="w-3 h-0.5 bg-green-500"></div>
           <span class="text-gray-600">Won</span>
@@ -31,12 +31,13 @@
       </div>
     </div>
 
-    <!-- SVG Network Visualization -->
+    <!-- Content: Either visualization or empty state -->
+    <div v-if="games.length > 0">
+      <!-- SVG Network Visualization -->
     <div class="relative bg-gray-50 rounded-lg p-4 overflow-hidden">
       <svg 
-        :width="svgWidth" 
-        :height="svgHeight" 
-        class="w-full border border-gray-200 rounded"
+        viewBox="0 0 600 400"
+        class="w-full h-auto border border-gray-200 rounded max-w-full"
         @mouseleave="clearHover"
       >
         <!-- Background Grid -->
@@ -69,7 +70,7 @@
           <g
             v-for="node in nodes"
             :key="node.id"
-            class="cursor-pointer transition-all duration-300"
+            class="cursor-pointer transition-all duration-300 hover:opacity-90"
             @mouseenter="hoverItem(node.id)"
             @click="selectItem(node.id)"
           >
@@ -82,7 +83,10 @@
               :stroke="node.strokeColor"
               :stroke-width="node.strokeWidth"
               class="transition-all duration-300"
-              :class="{ 'drop-shadow-lg': hoveredItem === node.id }"
+              :class="{ 
+                'drop-shadow-lg stroke-blue-500 stroke-2': hoveredItem === node.id,
+                'stroke-blue-300 stroke-2': selectedItem === node.id
+              }"
             />
             
             <!-- Node Label -->
@@ -90,8 +94,11 @@
               :x="node.x"
               :y="node.y + node.radius + 12"
               text-anchor="middle"
-              class="text-xs font-medium fill-gray-700"
-              :class="{ 'font-bold fill-gray-900': hoveredItem === node.id }"
+              class="text-xs font-medium fill-gray-700 transition-all duration-300 pointer-events-none"
+              :class="{ 
+                'font-bold fill-blue-600': hoveredItem === node.id,
+                'fill-blue-700 font-semibold': selectedItem === node.id
+              }"
             >
               {{ truncateLabel(getLabel(node.id), 10) }}
             </text>
@@ -197,6 +204,41 @@
               ✗ Lost to {{ getLabel(loss.opponent) }}
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    
+    <!-- Interaction hint - shows when there are nodes to click -->
+    <div v-if="games.length > 0" class="text-center mt-3 text-xs text-gray-500">
+      <p>💡 Click on any node to see detailed comparison breakdown</p>
+    </div>
+
+    <!-- Empty State when no games yet -->
+    <div v-else class="relative bg-gray-50 rounded-lg p-8 text-center">
+      <div class="space-y-4">
+        <div class="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <div>
+          <h4 class="font-semibold text-gray-700 mb-2">No comparisons yet</h4>
+          <p class="text-gray-500 text-sm">
+            The comparison network will appear here as you make choices between items.
+            <br>
+            Each item will be a node, and your comparisons will be connections between them.
+          </p>
+        </div>
+        <div class="text-xs text-gray-400 border-t border-gray-200 pt-4 space-y-2">
+          <p>💡 Start comparing items to see this visualization come to life!</p>
+          <p class="flex items-center justify-center space-x-1 text-purple-500">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <span>Click on nodes for detailed comparison breakdown</span>
+          </p>
         </div>
       </div>
     </div>
