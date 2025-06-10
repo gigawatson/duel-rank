@@ -16,7 +16,7 @@
     <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
       <!-- Option A -->
       <button
-        @click="$emit('choose', game[0])"
+        @click="(event) => { (event.target as HTMLElement).blur(); $emit('choose', game[0]) }"
         class="flex-1 w-full lg:max-w-sm bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-xl p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 cursor-pointer"
       >
         <span class="text-sm font-medium text-blue-100 mb-2 block">Option A</span>
@@ -32,7 +32,7 @@
 
       <!-- Option B -->
       <button
-        @click="$emit('choose', game[1])"
+        @click="(event) => { (event.target as HTMLElement).blur(); $emit('choose', game[1]) }"
         class="flex-1 w-full lg:max-w-sm bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold text-xl p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 cursor-pointer"
       >
         <span class="text-sm font-medium text-purple-100 mb-2 block">Option B</span>
