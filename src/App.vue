@@ -5,19 +5,19 @@
   Manages view switching between list management and comparison modes.
 -->
 <template>
-  <div class="max-w-xl lg:max-w-4xl xl:max-w-6xl mx-auto p-6 space-y-6 mt-8">
+  <div class="max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto p-6 space-y-6 mt-8">
     <!-- App Header -->
-    <header class="text-center">
-      <h1 class="text-5xl font-bold text-gray-800">Duel Ranker</h1>
-      <p class="text-gray-600 mt-2">Compare items pairwise to create rankings</p>
+    <header class="text-center mb-12">
+      <h1 class="text-7xl md:text-8xl font-black bg-gradient-to-tl from-slate-800 via-violet-500 to-zinc-400 bg-clip-text text-transparent">Duel Rank</h1>
+      <p class="text-gray-600 mt-2 md:text-lg font-medium">Create list rankings by comparing items pairwise.</p>
     </header>
 
     <!-- Mode Toggle (only show if we have lists) -->
-    <div v-if="hasLists" class="border-t pt-6">
+    <div v-if="hasLists" class="border-t border-t-gray-200 pt-12">
       <div class="text-center">
         <button 
           @click="toggleMode" 
-          class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          class="cursor-pointer group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           :class="canCompare ? (comparing ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white shadow-lg hover:shadow-xl focus:ring-gray-300' : 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl focus:ring-blue-300') : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
           :disabled="!canCompare"
         >
@@ -53,14 +53,6 @@
       <ComparisonView v-else />
     </main>
 
-    <!-- App Footer -->
-    <footer class="text-center text-xs text-gray-500 border-t pt-4">
-      <p>
-        Create rankings by comparing pairs of items. 
-        <br>
-        The algorithm uses your choices to infer the complete ranking.
-      </p>
-    </footer>
   </div>
 </template>
 
@@ -97,20 +89,7 @@ const toggleMode = () => {
 /* Global styles and transitions */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f9fafb;
   margin: 0;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-input:focus,
-select:focus,
-button:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
 }
 
 /* Smooth transitions for all interactive elements */
