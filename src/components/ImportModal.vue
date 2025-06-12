@@ -305,8 +305,8 @@ const parseText = (text: string): string[] => {
     .map(item => {
       // Remove common prefixes (numbers, bullets, dashes)
       return item
-        .replace(/^\s*[\d]+[\.\)]\s*/, '') // "1. " or "1) "
-        .replace(/^\s*[•\-\*]\s*/, '')     // "• " or "- " or "* "
+        .replace(/^\s*\d+[.)]\s*/, '') // "1. " or "1) "
+        .replace(/^\s*[•\-*]\s*/, '')  // "• " or "- " or "* "
         .trim()
     })
     .filter(item => item.length > 0)      // Remove empty items
@@ -364,8 +364,7 @@ const processFile = (file: File) => {
   
   const reader = new FileReader()
   reader.onload = (e) => {
-    const content = e.target?.result as string
-    textInput.value = content
+    textInput.value = e.target?.result as string
     parseTextInput()
   }
   reader.onerror = () => {
