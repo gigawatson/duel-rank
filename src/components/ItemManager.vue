@@ -14,12 +14,31 @@
             <span class="text-lg text-white">📝</span>
           </div>
           <div>
-            <h3 class="font-semibold text-gray-800">Items to Compare</h3>
-            <p class="text-sm text-gray-600">Add and manage items for ranking</p>
+            <div class="flex items-center space-x-2">
+              <h3 class="font-semibold text-gray-800">Items in</h3>
+              <div class="px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                <span class="text-sm font-medium text-blue-800">{{ currentListName }}</span>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600">Add and manage items for this list</p>
           </div>
         </div>
-        <div v-if="items.length > 0" class="text-sm text-gray-500">
-          {{ items.length }} item{{ items.length === 1 ? '' : 's' }}
+        <div class="flex items-center space-x-3">
+          <div v-if="items.length > 0" class="text-sm text-gray-500">
+            {{ items.length }} item{{ items.length === 1 ? '' : 's' }}
+          </div>
+          <div v-if="items.length > 0" class="px-2 py-1 bg-gray-100 rounded-md">
+            <span class="text-xs font-medium text-gray-600 uppercase tracking-wide">Active List</span>
+          </div>
+          <button 
+            @click="showImportModal = true"
+            class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+            </svg>
+            <span>Import Items</span>
+          </button>
         </div>
       </div>
 
@@ -32,7 +51,7 @@
                 ref="itemInput"
                 v-model="newItemLabel.value.value" 
                 @input="clearItemError"
-                placeholder="e.g., Pizza, Burger, Sushi..." 
+                :placeholder="`Add item to &quot;${currentListName}&quot;...`"
                 class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-colors"
                 :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': newItemLabel.error }"
               />
@@ -163,8 +182,10 @@
           <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
             <span class="text-2xl text-white">📝</span>
           </div>
-          <h4 class="text-lg font-semibold text-gray-700 mb-2">No items yet</h4>
-          <p class="text-gray-500 mb-4">Add at least 2 items to start comparing and ranking</p>
+          <h4 class="text-lg font-semibold text-gray-700 mb-2">
+            <span class="text-blue-600">"{{ currentListName }}"</span> is empty
+          </h4>
+          <p class="text-gray-500 mb-4">Add at least 2 items to start comparing and ranking this list</p>
           <div class="flex items-center justify-center space-x-2 text-sm text-gray-400">
             <span>💡</span>
             <span>Tip: Add items like "Pizza", "Burger", "Sushi" to rank your favorites</span>
@@ -183,8 +204,10 @@
           </svg>
         </div>
         <div>
-          <p class="font-semibold text-green-800">Ready for comparison!</p>
-          <p class="text-sm text-green-600">You have {{ items.length }} items ready to rank</p>
+          <p class="font-semibold text-green-800">
+            <span class="text-blue-600">"{{ currentListName }}"</span> is ready for comparison!
+          </p>
+          <p class="text-sm text-green-600">{{ items.length }} items ready to rank</p>
         </div>
       </div>
     </div>
@@ -194,11 +217,22 @@
           <span class="text-white font-bold text-sm">{{ items.length }}</span>
         </div>
         <div>
-          <p class="font-semibold text-yellow-800">Add 1 more item</p>
+          <p class="font-semibold text-yellow-800">
+            Add 1 more item to <span class="text-blue-600">"{{ currentListName }}"</span>
+          </p>
           <p class="text-sm text-yellow-600">You need at least 2 items to start comparing</p>
         </div>
       </div>
     </div>
+
+    <!-- Import Modal -->
+    <ImportModal 
+      :is-open="showImportModal"
+      :list-name="currentListName"
+      :existing-items="items.map(item => item.label)"
+      @close="showImportModal = false"
+      @import="handleImportItems"
+    />
   </div>
 </template>
 
@@ -207,6 +241,7 @@ import { computed, ref, nextTick, onMounted } from 'vue'
 import { useListStore } from '../stores/useListStore'
 import { useValidatedInput } from '../composables/useFormValidation'
 import { validateItemName } from '../utils/validation'
+import ImportModal from './ImportModal.vue'
 
 // Store access
 const store = useListStore()
@@ -222,8 +257,12 @@ const editItemLabel = useValidatedInput('', validateItemName)
 // Edit state
 const editingItemId = ref<string | null>(null)
 
+// Import modal state
+const showImportModal = ref(false)
+
 // Computed properties
 const items = computed(() => store.list.items)
+const currentListName = computed(() => store.list.name || 'Untitled List')
 
 /**
  * Handles item addition with validation
@@ -331,6 +370,19 @@ const formatItemDate = (timestamp: number): string => {
   if (hours > 0) return `${hours} hour${hours === 1 ? '' : 's'} ago`
   if (minutes > 0) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
   return 'just now'
+}
+
+/**
+ * Handles importing multiple items
+ */
+const handleImportItems = async (importedItems: string[]) => {
+  for (const itemLabel of importedItems) {
+    store.addItem(itemLabel)
+  }
+  
+  // Focus back to the regular item input after import
+  await nextTick()
+  itemInput.value?.focus()
 }
 
 /**

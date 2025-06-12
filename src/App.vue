@@ -17,8 +17,8 @@
       <div class="text-center">
         <button 
           @click="toggleMode" 
-          class="cursor-pointer group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          :class="canCompare ? (comparing ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white shadow-lg hover:shadow-xl focus:ring-gray-300' : 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl focus:ring-blue-300') : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
+          class="cursor-pointer group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-lg bg-gradient-to-r from-slate-800 via-violet-500 to-zinc-800 hover:from-slate-800 hover:via-violet-500 hover:to-zinc-800 text-white transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-violet-300 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+          :class="{ 'animated-gradient': !comparing }"
           :disabled="!canCompare"
         >
           <span v-if="comparing" class="flex items-center space-x-3">
@@ -97,5 +97,16 @@ button,
 input,
 select {
   transition: all 0.2s ease;
+}
+
+/* Animated gradient for comparison button */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 5s ease infinite;
 }
 </style>
