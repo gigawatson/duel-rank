@@ -12,7 +12,7 @@
 
       <!-- Create First List -->
       <div class="max-w-sm mx-auto">
-        <div class="bg-gradient-to-r from-gray-100 to-slate-100 border border-gray-200 rounded-xl p-6 space-y-5 mt-18">
+        <div class="bg-gradient-to-r from-violet-50 to-violet-100 border border-violet-800/10 rounded-xl p-6 space-y-5 mt-18">
           <h2 class="font-semibold text-gray-800 uppercase text-center">Create your first list</h2>
 
           <form @submit.prevent="handleCreateFirstList" class="space-y-3">
@@ -21,8 +21,8 @@
               v-model="firstListName.value.value"
               @input="clearListError"
               placeholder="e.g., Best Movies, Favorite Foods..."
-              class="w-full bg-white border border-gray-300 p-3 rounded-lg text-center focus:border-gray-400 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500"
-              :class="{ 'border-gray-300 focus:border-gray-400': firstListName.error }"
+              class="w-full bg-white border border-violet-300 p-3 rounded-lg text-center focus:border-violet-400 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500"
+              :class="{ 'border-violet-300 focus:border-violet-400': firstListName.error }"
             />
 
             <button
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Features Preview -->
-      <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-18">
+      <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-22">
         <div class="text-center space-y-1">
           <div class="w-12 h-12 mx-auto bg-violet-100 ring-1 ring-violet-200 inset-ring inset-ring-white rounded-lg flex items-center justify-center mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">

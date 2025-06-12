@@ -7,18 +7,21 @@
 <template>
   <div class="space-y-6">
     <!-- Items Management -->
-    <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <div class="bg-violet-50/30 border border-violet-800/10 rounded-xl p-6">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-            <span class="text-lg text-white">📝</span>
+          <div class="w-10 h-10 bg-gradient-to-br from-violet-100 to-violet-300 ring-1 ring-violet-300 inset-ring inset-ring-white rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-violet-800">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
+            </svg>
           </div>
           <div>
             <div class="flex items-center space-x-2">
-              <h3 class="font-semibold text-gray-800">Items in</h3>
-              <div class="px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg">
-                <span class="text-sm font-medium text-blue-800">{{ currentListName }}</span>
-              </div>
+              <h3 class="font-semibold text-gray-800 flex items-center space-x-1.5">
+                <span>Items in the</span>
+                <span class="px-2 py-1 text-xs bg-indigo-600 text-white rounded-md">{{ currentListName }}</span>
+                <span>list</span>
+              </h3>
             </div>
             <p class="text-sm text-gray-600">Add and manage items for this list</p>
           </div>
@@ -27,15 +30,12 @@
           <div v-if="items.length > 0" class="text-sm text-gray-500">
             {{ items.length }} item{{ items.length === 1 ? '' : 's' }}
           </div>
-          <div v-if="items.length > 0" class="px-2 py-1 bg-gray-100 rounded-md">
-            <span class="text-xs font-medium text-gray-600 uppercase tracking-wide">Active List</span>
-          </div>
           <button 
             @click="showImportModal = true"
-            class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+            class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-violet-700 bg-white border border-violet-800/20 rounded-lg hover:bg-violet-50 hover:border-violet-300 transition-colors cursor-pointer"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75v6.75m0 0-3-3m3 3 3-3m-8.25 6a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
             </svg>
             <span>Import Items</span>
           </button>
@@ -43,7 +43,7 @@
       </div>
 
       <!-- Add New Item Form -->
-      <div class="mb-6">
+      <div class="mb-8">
         <form @submit.prevent="handleAddItem" class="space-y-3">
           <div class="flex space-x-3">
             <div class="flex-1">
@@ -80,21 +80,23 @@
 
       <!-- Items List -->
       <div v-if="items.length > 0">
-        <div class="border-t pt-6">
-          <h4 class="font-medium text-gray-800 mb-4 flex items-center space-x-2">
-            <span class="text-blue-600">📋</span>
-            <span>Current Items ({{ items.length }})</span>
+        <div class="border-t border-violet-800/10 pt-8">
+          <h4 class="font-medium text-gray-800 mb-6 flex items-center space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="size-5.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" />
+            </svg>
+            <span>Current Items <span class="opacity-60">({{ items.length }})</span></span>
           </h4>
 
         <TransitionGroup name="item-list" tag="div" class="space-y-3">
           <div
             v-for="(item, index) in items" 
             :key="item.id" 
-            class="group relative bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+            class="group relative bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-lg p-4 hover:border-violet-300 hover:shadow-sm transition-all duration-200"
           >
             <!-- Item Number Badge -->
-            <div class="absolute -left-2 -top-2 w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center z-10">
-              <span class="text-xs font-bold text-white">{{ index + 1 }}</span>
+            <div class="absolute -left-2 -top-2 w-6 h-6 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center z-10 border border-violet-600 inset-ring inset-ring-white/30">
+              <span class="text-xs font-semibold text-white">{{ index + 1 }}</span>
             </div>
 
             <!-- Edit Mode -->
@@ -233,6 +235,19 @@
       @close="showImportModal = false"
       @import="handleImportItems"
     />
+
+    <!-- Confirmation Modal -->
+    <ConfirmationModal
+      :is-open="confirmationState.isOpen"
+      :type="confirmationState.type"
+      :title="confirmationState.title"
+      :subtitle="confirmationState.subtitle"
+      :message="confirmationState.message"
+      :confirm-text="confirmationState.confirmText"
+      :cancel-text="confirmationState.cancelText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
@@ -240,11 +255,16 @@
 import { computed, ref, nextTick, onMounted } from 'vue'
 import { useListStore } from '../stores/useListStore'
 import { useValidatedInput } from '../composables/useFormValidation'
+import { useConfirmation } from '../composables/useConfirmation'
 import { validateItemName } from '../utils/validation'
 import ImportModal from './ImportModal.vue'
+import ConfirmationModal from './ConfirmationModal.vue'
 
 // Store access
 const store = useListStore()
+
+// Confirmation modal
+const { confirmationState, showConfirmation, handleConfirm, handleCancel } = useConfirmation()
 
 // Template refs
 const itemInput = ref<HTMLInputElement>()
@@ -293,8 +313,17 @@ const clearItemError = () => {
  * @param id - Item ID to remove
  * @param label - Item label for confirmation dialog
  */
-const handleRemoveItem = (id: string, label: string) => {
-  if (confirm(`Remove "${label}" from the list?`)) {
+const handleRemoveItem = async (id: string, label: string) => {
+  const confirmed = await showConfirmation({
+    type: 'delete',
+    title: 'Remove Item',
+    subtitle: 'This will remove the item from your list',
+    message: `Are you sure you want to remove "${label}" from the list? This action cannot be undone.`,
+    confirmText: 'Remove Item',
+    cancelText: 'Cancel'
+  })
+  
+  if (confirmed) {
     store.removeItem(id)
   }
 }
@@ -311,8 +340,10 @@ const startEdit = async (id: string, currentLabel: string) => {
   
   // Focus the edit input after Vue updates the DOM
   await nextTick()
-  editInput.value?.focus()
-  editInput.value?.select()
+  if (editInput.value && typeof editInput.value.focus === 'function') {
+    editInput.value.focus()
+    editInput.value.select()
+  }
 }
 
 /**

@@ -5,7 +5,7 @@
   Manages view switching between list management and comparison modes.
 -->
 <template>
-  <div class="max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto p-6 space-y-6 mt-8">
+  <div class="max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto p-6 space-y-6 mt-12">
     <!-- App Header -->
     <header class="text-center mb-12">
       <h1 class="text-7xl md:text-8xl font-black bg-gradient-to-tl from-slate-800 via-violet-500 to-zinc-400 bg-clip-text text-transparent">Duel Rank</h1>
@@ -13,11 +13,11 @@
     </header>
 
     <!-- Mode Toggle (only show if we have lists) -->
-    <div v-if="hasLists" class="border-t border-t-gray-200 pt-12">
+    <div v-if="hasLists" class="border-t border-t-violet-800/10 pt-12 mb-12">
       <div class="text-center">
         <button 
           @click="toggleMode" 
-          class="cursor-pointer group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-lg bg-gradient-to-r from-slate-800 via-violet-500 to-zinc-800 hover:from-slate-800 hover:via-violet-500 hover:to-zinc-800 text-white transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-violet-300 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+          class="cursor-pointer group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-lg bg-gradient-to-r from-slate-800 via-violet-500 to-zinc-800 hover:from-slate-800 hover:via-violet-500 hover:to-zinc-800 text-white transition-all duration-200 transform hover:scale-105 focus:outline-none ring-4 ring-violet-300/50 hover:ring-violet-300/80 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           :class="{ 'animated-gradient': !comparing }"
           :disabled="!canCompare"
         >
@@ -35,11 +35,8 @@
           </span>
         </button>
         
-        <p v-if="!canCompare" class="text-sm text-gray-500 mt-4 flex items-center justify-center space-x-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>Add at least 2 items to start comparing</span>
+        <p v-if="!canCompare" class="text-sm text-gray-500 mt-4">
+          <span>Add at least two items to start comparing.</span>
         </p>
       </div>
     </div>

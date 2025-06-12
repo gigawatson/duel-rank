@@ -8,7 +8,7 @@
   <div class="text-center space-y-8">
     <!-- Main Question -->
     <div>
-      <h2 class="text-3xl font-bold text-gray-800 mb-2">Which is better?</h2>
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Which do you prefer?</h2>
       <p class="text-lg text-gray-600">Choose your preference to build the ranking</p>
     </div>
 
