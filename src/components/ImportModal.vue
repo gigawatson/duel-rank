@@ -154,10 +154,21 @@
                 :key="index"
                 class="flex items-center justify-between py-1"
               >
-                <span class="text-sm text-gray-700">{{ item.text }}</span>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm text-gray-700">{{ item.text }}</span>
+                  <span v-if="item.isDuplicate && duplicateAction === 'append'" class="text-xs text-blue-600">
+                    → {{ generateUniqueItemName(item.text) }}
+                  </span>
+                </div>
                 <div class="flex items-center space-x-1">
-                  <span v-if="item.isDuplicate" class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
-                    Duplicate
+                  <span v-if="item.isDuplicate" class="px-2 py-1 text-xs rounded"
+                    :class="{
+                      'bg-yellow-100 text-yellow-700': duplicateAction === 'skip',
+                      'bg-orange-100 text-orange-700': duplicateAction === 'replace',
+                      'bg-blue-100 text-blue-700': duplicateAction === 'append'
+                    }"
+                  >
+                    {{ duplicateAction === 'skip' ? 'Will Skip' : duplicateAction === 'replace' ? 'Will Replace' : 'Will Append' }}
                   </span>
                   <span v-if="item.hasError" class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
                     Error
@@ -221,7 +232,7 @@ const props = defineProps<Props>()
 // Emits
 interface Emits {
   (e: 'close'): void
-  (e: 'import', items: string[]): void
+  (e: 'import', data: { items: string[], duplicateAction: 'skip' | 'replace' | 'append', duplicateItems: string[] }): void
 }
 
 const emit = defineEmits<Emits>()
@@ -248,9 +259,22 @@ interface ParsedItem {
 const parsedItems = ref<ParsedItem[]>([])
 
 // Computed properties
-const newItemsCount = computed(() => 
-  parsedItems.value.filter(item => !item.isDuplicate && !item.hasError).length
-)
+const newItemsCount = computed(() => {
+  let count = 0
+  for (const item of parsedItems.value) {
+    if (item.hasError) continue
+    
+    if (item.isDuplicate) {
+      // Only count duplicates if we're replacing or appending
+      if (duplicateAction.value === 'replace' || duplicateAction.value === 'append') {
+        count++
+      }
+    } else {
+      count++
+    }
+  }
+  return count
+})
 
 const duplicateCount = computed(() => 
   parsedItems.value.filter(item => item.isDuplicate).length
@@ -386,14 +410,65 @@ const clearFile = () => {
 }
 
 /**
+ * Generates a unique item name by appending numbers
+ */
+const generateUniqueItemName = (originalName: string): string => {
+  const allExistingNames = [
+    ...props.existingItems,
+    ...parsedItems.value.filter(item => !item.isDuplicate).map(item => item.text)
+  ]
+  
+  let counter = 2
+  let newName = `${originalName} (${counter})`
+  
+  // Keep incrementing until we find a unique name
+  while (allExistingNames.some(existing => existing.toLowerCase() === newName.toLowerCase())) {
+    counter++
+    newName = `${originalName} (${counter})`
+  }
+  
+  return newName
+}
+
+/**
  * Imports the items
  */
 const importItems = () => {
-  const validItems = parsedItems.value
-    .filter(item => !item.hasError && !item.isDuplicate)
-    .map(item => item.text)
+  let itemsToImport: string[] = []
+  const duplicateItems: string[] = []
   
-  emit('import', validItems)
+  for (const item of parsedItems.value) {
+    // Skip items with errors
+    if (item.hasError) continue
+    
+    if (item.isDuplicate) {
+      duplicateItems.push(item.text)
+      
+      // Handle duplicates based on selected action
+      switch (duplicateAction.value) {
+        case 'skip':
+          // Don't include duplicates
+          continue
+        case 'replace':
+          // Include duplicates (they will replace existing items)
+          itemsToImport.push(item.text)
+          break
+        case 'append':
+          // Append number to make unique
+          itemsToImport.push(generateUniqueItemName(item.text))
+          break
+      }
+    } else {
+      // Not a duplicate, include it
+      itemsToImport.push(item.text)
+    }
+  }
+  
+  emit('import', { 
+    items: itemsToImport, 
+    duplicateAction: duplicateAction.value,
+    duplicateItems 
+  })
   closeModal()
 }
 

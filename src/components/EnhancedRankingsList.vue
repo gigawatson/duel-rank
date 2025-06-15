@@ -42,7 +42,7 @@
       <TransitionGroup 
         name="ranking" 
         tag="div" 
-        class="space-y-2"
+        class="space-y-4"
         appear
       >
         <div
@@ -231,8 +231,8 @@ const getRankingItemClass = (entry: RankingEntry, index: number): string => {
 const getRankBadgeClass = (index: number): string => {
   if (index === 0) return 'bg-gradient-to-r from-yellow-400 to-yellow-500'
   if (index === 1) return 'bg-gradient-to-r from-gray-400 to-gray-500'
-  if (index === 2) return 'bg-gradient-to-r from-orange-400 to-orange-500'
-  return 'bg-gradient-to-r from-blue-400 to-blue-500'
+  if (index === 2) return 'bg-gradient-to-r from-yellow-600 to-amber-700'
+  return 'bg-gradient-to-r from-indigo-400 to-indigo-500'
 }
 
 /**

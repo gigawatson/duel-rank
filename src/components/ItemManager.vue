@@ -406,7 +406,23 @@ const formatItemDate = (timestamp: number): string => {
 /**
  * Handles importing multiple items
  */
-const handleImportItems = async (importedItems: string[]) => {
+const handleImportItems = async (importData: { items: string[], duplicateAction: 'skip' | 'replace' | 'append', duplicateItems: string[] }) => {
+  const { items: importedItems, duplicateAction, duplicateItems } = importData
+  
+  // If we're replacing duplicates, remove the existing items first
+  if (duplicateAction === 'replace' && duplicateItems.length > 0) {
+    for (const duplicateLabel of duplicateItems) {
+      // Find the existing item by label and remove it
+      const existingItem = store.list.items.find(item => 
+        item.label.toLowerCase() === duplicateLabel.toLowerCase()
+      )
+      if (existingItem) {
+        store.removeItem(existingItem.id)
+      }
+    }
+  }
+  
+  // Add all the new items
   for (const itemLabel of importedItems) {
     store.addItem(itemLabel)
   }

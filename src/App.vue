@@ -28,7 +28,7 @@
             <span>Back to List Management</span>
           </span>
           <span v-else class="flex items-center space-x-3">
-            <span>Start Comparing Items</span>
+            <span>{{ buttonText }}</span>
             <svg class="w-6 h-6 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
             </svg>
@@ -57,6 +57,7 @@
 import { computed, ref } from 'vue'
 import { useListStore } from './stores/useListStore'
 import { validateListForComparison } from './utils/validation'
+import { useComparison } from './composables/useComparison'
 
 // Import components
 import OnboardingFlow from './components/OnboardingFlow.vue'
@@ -66,11 +67,25 @@ import ComparisonView from './components/ComparisonView.vue'
 const store = useListStore()
 const comparing = ref(false)
 
+// Comparison state for button text logic
+const { hasAnyComparisons, isComparisonComplete } = useComparison()
+
 // Computed properties
 const hasLists = computed(() => store.allLists.length > 0)
 const canCompare = computed(() => 
   hasLists.value && validateListForComparison(store.list.items)
 )
+
+// Determine button text based on comparison state
+const buttonText = computed(() => {
+  if (!hasAnyComparisons.value) {
+    return "Start Comparing Items"
+  } else if (isComparisonComplete.value) {
+    return "See Completed Ranking"
+  } else {
+    return "Continue Comparing Items"
+  }
+})
 
 /**
  * Handles toggling between list management and comparison modes

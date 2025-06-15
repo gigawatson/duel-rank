@@ -15,7 +15,7 @@
       </div>
     </div>
     
-    <div v-if="log.length > 0" class="space-y-2 max-h-64 overflow-y-auto">
+    <div v-if="log.length > 0" class="space-y-2 max-h-64 overflow-y-auto p-4 border border-gray-200 rounded-l-lg">
       <div 
         v-for="(entry, index) in log" 
         :key="index"
@@ -27,14 +27,14 @@
           <div class="flex items-center space-x-3 flex-1 min-w-0">
             <!-- Result Icon -->
             <div class="flex-shrink-0">
-              <div v-if="entry.includes('skipped')" class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <div v-if="entry.includes('skipped')" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 text-gray-700">
+                  <path d="M2.53 3.956A1 1 0 0 0 1 4.804v6.392a1 1 0 0 0 1.53.848l5.113-3.196c.16-.1.279-.233.357-.383v2.73a1 1 0 0 0 1.53.849l5.113-3.196a1 1 0 0 0 0-1.696L9.53 3.956A1 1 0 0 0 8 4.804v2.731a.992.992 0 0 0-.357-.383L2.53 3.956Z" />
                 </svg>
               </div>
-              <div v-else class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+              <div v-else class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4 text-green-700">
+                  <path fill-rule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
                 </svg>
               </div>
             </div>
