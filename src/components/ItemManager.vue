@@ -34,8 +34,8 @@
             @click="showImportModal = true"
             class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-violet-700 bg-white border border-violet-800/20 rounded-lg hover:bg-violet-50 hover:border-violet-300 transition-colors cursor-pointer"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75v6.75m0 0-3-3m3 3 3-3m-8.25 6a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-violet-800">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
             <span>Import Items</span>
           </button>
@@ -52,13 +52,12 @@
                 v-model="newItemLabel.value.value" 
                 @input="clearItemError"
                 :placeholder="`Add item to &quot;${currentListName}&quot;...`"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-colors"
-                :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': newItemLabel.error }"
+                class="w-full p-3 rounded-lg bg-white outline-0 border border-violet-800/20 focus:border-violet-500 focus:ring-4 focus:ring-violet-800/15 transition-colors"
               />
             </div>
             <button 
               type="submit" 
-              class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2 cursor-pointer"
+              class="px-6 py-3 bg-gradient-to-r from-violet-700 to-violet-950 hover:from-violet-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 cursor-pointer"
               :disabled="!newItemLabel.value.value.trim()"
             >
               <span>Add</span>
@@ -108,14 +107,13 @@
                   @keyup.enter="handleSaveEdit(item.id)"
                   @keyup.esc="cancelEdit"
                   @blur="handleSaveEdit(item.id)"
-                  class="w-full p-3 border border-blue-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                  :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': editItemLabel.error }"
+                  class="w-full p-3 rounded-lg bg-white outline-0 border border-violet-800/20 focus:border-violet-500 focus:ring-4 focus:ring-violet-800/15 transition-colors"
                 />
               </div>
               <div class="flex items-center space-x-2">
                 <button 
                   @click="handleSaveEdit(item.id)"
-                  class="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center space-x-1 cursor-pointer"
+                  class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   title="Save changes"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +123,7 @@
                 </button>
                 <button 
                   @click="cancelEdit"
-                  class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-1 cursor-pointer"
+                  class="px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-300 hover:text-gray-950 transition-colors flex items-center space-x-1 cursor-pointer"
                   title="Cancel edit"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +143,7 @@
               <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <button 
                   @click="startEdit(item.id, item.label)" 
-                  class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1 cursor-pointer"
+                  class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   :title="`Edit ${item.label}`"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +153,7 @@
                 </button>
                 <button 
                   @click="handleRemoveItem(item.id, item.label)" 
-                  class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-1 cursor-pointer"
+                  class="px-3 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 hover:text-red-950 transition-colors flex items-center space-x-1 cursor-pointer"
                   :title="`Remove ${item.label}`"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,50 +177,33 @@
       </div>
       
       <!-- Empty State -->
-      <div v-else class="border-t pt-6">
+      <div v-else class="pt-2">
         <div class="text-center py-8">
-          <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
-            <span class="text-2xl text-white">📝</span>
+          <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-violet-100 to-violet-300 ring-1 ring-violet-300 inset-ring inset-ring-white rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 text-violet-800">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+            </svg>
           </div>
           <h4 class="text-lg font-semibold text-gray-700 mb-2">
-            <span class="text-blue-600">"{{ currentListName }}"</span> is empty
+            <span class="text-indigo-600">"{{ currentListName }}"</span> is empty
           </h4>
-          <p class="text-gray-500 mb-4">Add at least 2 items to start comparing and ranking this list</p>
-          <div class="flex items-center justify-center space-x-2 text-sm text-gray-400">
-            <span>💡</span>
-            <span>Tip: Add items like "Pizza", "Burger", "Sushi" to rank your favorites</span>
-          </div>
+          <p class="text-gray-500 mb-4">Add at least 2 items to start comparing and ranking this list.</p>
         </div>
       </div>
     </div>
 
 
     <!-- Comparison Readiness Indicator -->
-    <div v-if="items.length >= 2" class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+    <div v-if="items.length === 1" class="bg-yellow-50 border border-yellow-400 rounded-lg p-4">
       <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="font-semibold text-green-800">
-            <span class="text-blue-600">"{{ currentListName }}"</span> is ready for comparison!
-          </p>
-          <p class="text-sm text-green-600">{{ items.length }} items ready to rank</p>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="items.length === 1" class="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+        <div class="w-9 h-9 bg-yellow-500 rounded-full flex items-center justify-center">
           <span class="text-white font-bold text-sm">{{ items.length }}</span>
         </div>
         <div>
-          <p class="font-semibold text-yellow-800">
-            Add 1 more item to <span class="text-blue-600">"{{ currentListName }}"</span>
+          <p class="font-semibold text-yellow-900">
+            Add 1 more item to <span class="text-indigo-600">"{{ currentListName }}"</span>
           </p>
-          <p class="text-sm text-yellow-600">You need at least 2 items to start comparing</p>
+          <p class="text-sm text-yellow-700">You need at least 2 items to start comparing.</p>
         </div>
       </div>
     </div>
@@ -340,9 +321,15 @@ const startEdit = async (id: string, currentLabel: string) => {
   
   // Focus the edit input after Vue updates the DOM
   await nextTick()
-  if (editInput.value && typeof editInput.value.focus === 'function') {
-    editInput.value.focus()
-    editInput.value.select()
+  // Get all elements with the editInput ref (there might be multiple in the v-for)
+  const inputs = editInput.value
+  if (inputs) {
+    // If it's an array, find the visible one, otherwise use the single element
+    const inputElement = Array.isArray(inputs) ? inputs.find(input => input?.offsetParent !== null) : inputs
+    if (inputElement && typeof inputElement.focus === 'function') {
+      inputElement.focus()
+      inputElement.select()
+    }
   }
 }
 
@@ -433,6 +420,14 @@ const handleImportItems = async (importData: { items: string[], duplicateAction:
 }
 
 /**
+ * Focus the item input (called from parent component)
+ */
+const focusItemInput = async () => {
+  await nextTick()
+  itemInput.value?.focus()
+}
+
+/**
  * Auto-focus the item input when component mounts, 
  * especially when we have an empty list (just created)
  */
@@ -443,6 +438,11 @@ onMounted(async () => {
   if (items.value.length === 0) {
     itemInput.value?.focus()
   }
+})
+
+// Expose the focusItemInput method to parent components
+defineExpose({
+  focusItemInput
 })
 </script>
 
@@ -471,14 +471,5 @@ onMounted(async () => {
 /* Hover glow effect for cards */
 .group:hover {
   box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
-}
-
-/* Focus ring styling */
-input:focus {
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
-}
-
-input.border-red-500:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 </style>

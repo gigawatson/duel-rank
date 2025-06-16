@@ -77,8 +77,8 @@
 
     <!-- Has Lists State: Full Interface -->
     <div v-else class="space-y-6">
-      <ListManager />
-      <ItemManager />
+      <ListManager @list-switched="handleListSwitched" />
+      <ItemManager ref="itemManager" />
     </div>
   </div>
 </template>
@@ -96,6 +96,7 @@ const store = useListStore()
 
 // Template refs
 const firstListInput = ref<HTMLInputElement>()
+const itemManager = ref()
 
 // Form handling with validation
 const firstListName = useValidatedInput('', validateListName)
@@ -124,6 +125,14 @@ const handleCreateFirstList = async () => {
  */
 const clearListError = () => {
   firstListName.clearError?.()
+}
+
+/**
+ * Handle list switched event from ListManager
+ */
+const handleListSwitched = () => {
+  // Focus the item input in ItemManager when a list is switched
+  itemManager.value?.focusItemInput()
 }
 
 /**

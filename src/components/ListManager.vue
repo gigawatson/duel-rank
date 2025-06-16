@@ -62,21 +62,26 @@
                   @keyup.enter="handleSaveListEdit(list.id)"
                   @keyup.esc="cancelListEdit"
                   @blur="handleSaveListEdit(list.id)"
-                  class="font-medium bg-white border border-blue-300 rounded px-2 py-1 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-gray-800"
-                  :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-200': editListName.error }"
+                  class="font-medium w-full p-3 rounded-lg bg-white outline-0 border border-violet-800/20 focus:border-violet-500 focus:ring-4 focus:ring-violet-800/15 transition-colors"
                 />
                 <div class="flex items-center space-x-2">
                   <button 
                     @click="handleSaveListEdit(list.id)"
-                    class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors cursor-pointer"
+                    class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center space-x-1 cursor-pointer"
                   >
-                    Save
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Save</span>
                   </button>
                   <button 
                     @click="cancelListEdit"
-                    class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors cursor-pointer"
+                    class="px-3 py-2 text-gray-600 rounded-lg hover:bg-gray-300 hover:text-gray-950 transition-colors flex items-center space-x-1 cursor-pointer"
                   >
-                    Cancel
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Cancel</span>
                   </button>
                 </div>
                 <!-- Edit Validation Error -->
@@ -160,20 +165,22 @@
               @input="clearListError"
               @keyup.esc="hideCreateForm"
               placeholder="Enter new list name..."
-              class="flex-1 p-2 text-sm bg-white border-2 border-violet-300 rounded-md outline-0 focus:border-violet-500 transition-colors"
-              :class="{ 'border-violet-300 focus:border-violet-500': newListName.error }"
+              class="flex-1 p-3 rounded-lg bg-white outline-0 border border-violet-800/20 focus:border-violet-500 focus:ring-4 focus:ring-violet-800/15 transition-colors"
             />
             <button 
               type="submit" 
-              class="px-4 py-2 text-sm font-medium bg-violet-700 hover:bg-violet-800 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              class="px-6 py-3 bg-gradient-to-r from-violet-700 to-violet-950 hover:from-violet-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 cursor-pointer"
               :disabled="!newListName.value.value.trim()"
             >
-              Create
+              <span>Create</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
             </button>
             <button 
               type="button"
               @click="hideCreateForm"
-              class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-violet-800 hover:bg-violet-100 rounded-lg transition-colors cursor-pointer"
+              class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-violet-800 hover:bg-violet-100 rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -212,6 +219,11 @@ import { useValidatedInput } from '../composables/useFormValidation'
 import { useConfirmation } from '../composables/useConfirmation'
 import { validateListName } from '../utils/validation'
 import ConfirmationModal from './ConfirmationModal.vue'
+
+// Define emits
+const emit = defineEmits<{
+  'list-switched': []
+}>()
 
 // Store access
 const store = useListStore()
@@ -284,6 +296,8 @@ const clearListError = () => {
 const handleSwitchList = (listId: string) => {
   store.switchList(listId)
   selectedListId.value = listId
+  // Emit event to notify parent that list was switched
+  emit('list-switched')
 }
 
 /**
@@ -357,9 +371,15 @@ const handleEditList = async (listId: string) => {
   
   // Focus the edit input after Vue updates the DOM
   await nextTick()
-  if (editListInput.value && typeof editListInput.value.focus === 'function') {
-    editListInput.value.focus()
-    editListInput.value.select()
+  // Get all elements with the editListInput ref (there might be multiple in the v-for)
+  const inputs = editListInput.value
+  if (inputs) {
+    // If it's an array, find the visible one, otherwise use the single element
+    const inputElement = Array.isArray(inputs) ? inputs.find(input => input?.offsetParent !== null) : inputs
+    if (inputElement && typeof inputElement.focus === 'function') {
+      inputElement.focus()
+      inputElement.select()
+    }
   }
 }
 

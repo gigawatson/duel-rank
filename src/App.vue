@@ -50,6 +50,10 @@
       <ComparisonView v-else />
     </main>
 
+    <footer class="text-center border-t border-t-violet-800/10 mt-12 py-8">
+      <p><a class="tracking-tighter font-black text-lg bg-gradient-to-r from-violet-950 via-violet-500 to-zinc-600 bg-clip-text text-transparent opacity-50 hover:opacity-100 transition-opacity animated-gradient" href="https://exploriter.com" title="Made by Exploriter" target="_blank">explo<span class="font-light">(r|it)</span>er</a></p>
+    </footer>
+
   </div>
 </template>
 
