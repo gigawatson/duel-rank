@@ -223,6 +223,7 @@ import ConfirmationModal from './ConfirmationModal.vue'
 // Define emits
 const emit = defineEmits<{
   'list-switched': []
+  'list-created': []
 }>()
 
 // Store access
@@ -280,6 +281,8 @@ const handleCreateList = async () => {
     newListName.reset()
     selectedListId.value = store.activeListId
     showCreateForm.value = false
+    // Emit event to notify parent that a new list was created
+    emit('list-created')
   }
 }
 

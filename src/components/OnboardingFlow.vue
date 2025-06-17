@@ -77,7 +77,7 @@
 
     <!-- Has Lists State: Full Interface -->
     <div v-else class="space-y-6">
-      <ListManager @list-switched="handleListSwitched" />
+      <ListManager @list-switched="handleListSwitched" @list-created="handleListCreated" />
       <ItemManager ref="itemManager" />
     </div>
   </div>
@@ -132,6 +132,14 @@ const clearListError = () => {
  */
 const handleListSwitched = () => {
   // Focus the item input in ItemManager when a list is switched
+  itemManager.value?.focusItemInput()
+}
+
+/**
+ * Handle list created event from ListManager
+ */
+const handleListCreated = () => {
+  // Focus the item input in ItemManager when a new list is created
   itemManager.value?.focusItemInput()
 }
 
