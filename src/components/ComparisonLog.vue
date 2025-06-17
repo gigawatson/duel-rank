@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
         <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-        <span>Recent Comparisons</span>
+        <span>Comparison History</span>
       </h2>
       <div v-if="log.length > 0" class="text-xs text-gray-500">
         {{ log.length }} {{ log.length === 1 ? 'comparison' : 'comparisons' }}
@@ -53,8 +53,8 @@
           <!-- Quick Actions -->
           <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
-              v-if="index === 0 && canUndo"
-              @click="$emit('undo')"
+              v-if="canUndoEntry(entry)"
+              @click="$emit('undoComparison', getGameIdFromEntry(entry))"
               class="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition-colors flex items-center space-x-1 cursor-pointer"
               title="Undo this comparison"
             >
@@ -88,18 +88,6 @@
       </div>
     </div>
     
-    <!-- Actions Bar -->
-    <div v-if="log.length > 5" class="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
-      <div class="text-xs text-gray-500">
-        Showing recent {{ Math.min(log.length, 20) }} comparisons
-      </div>
-      <button 
-        @click="$emit('clearLog')"
-        class="text-xs text-red-600 hover:text-red-700 font-medium transition-colors cursor-pointer"
-      >
-        Clear all
-      </button>
-    </div>
   </div>
 </template>
 
@@ -110,17 +98,19 @@
 interface Props {
   log: readonly string[]  // Array of log entries
   canUndo?: boolean  // Whether undo is available for the latest entry
+  canUndoComparison?: (gameId: string) => boolean  // Function to check if specific comparison can be undone
+  items?: readonly { id: string; label: string }[]  // List items for gameId resolution
 }
 
 /**
  * Events emitted by the ComparisonLog component
  */
 interface Emits {
-  clearLog: []  // When user wants to clear the log
   undo: []  // When user wants to undo the latest comparison
+  undoComparison: [gameId: string]  // When user wants to undo a specific comparison
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<Emits>()
 
 /**
@@ -148,5 +138,30 @@ const getTimeAgo = (index: number): string => {
   if (index === 0) return 'just now'
   if (index === 1) return '1 comparison ago'
   return `${index} comparisons ago`
+}
+
+/**
+ * Extracts gameId from a log entry
+ */
+const getGameIdFromEntry = (entry: string): string => {
+  const match = entry.match(/(.+) vs (.+) → (winner: (.+)|skipped)/)
+  if (match && props.items) {
+    const [, itemA, itemB] = match
+    const itemAId = props.items.find(item => item.label === itemA)?.id
+    const itemBId = props.items.find(item => item.label === itemB)?.id
+    if (itemAId && itemBId) {
+      return `game-${itemAId}-${itemBId}`
+    }
+  }
+  return ''
+}
+
+/**
+ * Checks if a log entry can be undone
+ */
+const canUndoEntry = (entry: string): boolean => {
+  if (!props.canUndoComparison) return false
+  const gameId = getGameIdFromEntry(entry)
+  return gameId ? props.canUndoComparison(gameId) : false
 }
 </script>

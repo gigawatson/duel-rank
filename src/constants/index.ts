@@ -7,7 +7,8 @@ export const VALIDATION_MESSAGES = {
 
 export const STORAGE_KEYS = {
   LISTS: 'duel-ranker-lists',
-  ACTIVE_LIST_ID: 'duel-ranker-active-list-id'
+  ACTIVE_LIST_ID: 'duel-ranker-active-list-id',
+  LAST_ACTION: 'duel-ranker-last-action'
 } as const
 
 export const ID_SEPARATORS = {

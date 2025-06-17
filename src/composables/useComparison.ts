@@ -227,18 +227,67 @@ export function useComparison() {
   }
 
   /**
-   * Checks if undo is available
+   * Undoes a specific comparison by gameId
    */
-  const canUndo = computed(() => {
-    return store.lastAction !== null && store.lastAction.type === 'comparison'
-  })
+  const undoComparison = (gameId: string) => {
+    // Find which log entry corresponds to this gameId
+    const logIndex = list.value.log.findIndex(entry => {
+      // Extract game info from log entry to match with gameId
+      const match = entry.match(/(.+) vs (.+) → (winner: (.+)|skipped)/)
+      if (match) {
+        const [, itemA, itemB] = match
+        const itemAId = list.value.items.find(item => item.label === itemA)?.id
+        const itemBId = list.value.items.find(item => item.label === itemB)?.id
+        const expectedGameId = `game-${itemAId}-${itemBId}`
+        return expectedGameId === gameId || `game-${itemBId}-${itemAId}` === gameId
+      }
+      return false
+    })
+
+    const success = store.undoAction(gameId)
+    if (success && logIndex !== -1) {
+      // Remove the corresponding log entry
+      const newLog = [...list.value.log]
+      newLog.splice(logIndex, 1)
+      list.value.log = newLog
+      // Update the current game
+      updateGame()
+    }
+    return success
+  }
 
   /**
-   * Clears the comparison log
+   * Checks if a specific comparison can be undone
    */
-  const clearLog = () => {
-    store.clearLog()
+  const canUndoComparison = (gameId: string): boolean => {
+    return store.actionHistory.some(action => 
+      action.gameId === gameId && 
+      action.listId === store.activeListId &&
+      action.type === 'comparison'
+    )
   }
+
+  /**
+   * Checks if undo is available
+   */
+  const canUndo = computed((): boolean => {
+    if (!store.lastAction || store.lastAction.type !== 'comparison') {
+      return false
+    }
+    
+    // Check if the lastAction is for the current active list
+    if (store.lastAction.listId !== store.activeListId) {
+      return false
+    }
+    
+    // Check if the game referenced by lastAction still exists in the current list
+    const { gameId } = store.lastAction
+    const game = list.value.games.find(g => g.id === gameId)
+    
+    // Verify the game exists and has been completed (has winner or was skipped)
+    return !!(game && (game.winner || game.skipped))
+  })
+
 
   // Watch for list changes and update game accordingly
   watch(() => store.activeListId, () => {
@@ -269,7 +318,8 @@ export function useComparison() {
     toggleComparing,
     startRefining,
     undoLastComparison,
-    clearLog,
+    undoComparison,
+    canUndoComparison,
     labelFor,
     isDirectlyConfirmed
   }

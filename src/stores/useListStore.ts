@@ -20,7 +20,20 @@ export const useListStore = defineStore('list', {
     state: () => ({
         lists: useStorage<List[]>(STORAGE_KEYS.LISTS, []),
         activeListId: useStorage<string>(STORAGE_KEYS.ACTIVE_LIST_ID, ''),
-        lastAction: null as { type: 'comparison', gameId: string, previousState?: any } | null
+        actionHistory: useStorage<{ type: 'comparison', gameId: string, listId: string, previousState?: any, timestamp: number }[]>(STORAGE_KEYS.LAST_ACTION, [], localStorage, {
+            serializer: {
+                read: (v: any) => {
+                    if (!v) return []
+                    try {
+                        return JSON.parse(v)
+                    } catch (e) {
+                        console.warn('Failed to parse actionHistory from localStorage, clearing it:', e)
+                        return []
+                    }
+                },
+                write: (v: any) => JSON.stringify(v)
+            }
+        })
     }),
     getters: {
         list(state): List {
@@ -44,6 +57,13 @@ export const useListStore = defineStore('list', {
                 }
                 return list
             })
+        },
+        lastAction(state): { type: 'comparison', gameId: string, listId: string, previousState?: any, timestamp: number } | null {
+            // Return the most recent action for the current list
+            const recentActions = state.actionHistory
+                .filter(action => action.listId === state.activeListId)
+                .sort((a, b) => b.timestamp - a.timestamp)
+            return recentActions[0] || null
         }
     },
     actions: {
@@ -74,6 +94,19 @@ export const useListStore = defineStore('list', {
                 const newList = createEmptyList(name)
                 this.lists[index] = newList
                 this.activeListId = newList.id
+                // Clear action history since all games were reset
+                this.actionHistory = this.actionHistory.filter(action => action.listId !== this.activeListId)
+            }
+        },
+        resetComparisons() {
+            const list = this.list
+            if (list) {
+                // Keep the list and items, only clear comparison data
+                list.games = []
+                list.log = []
+                list.updatedAt = Date.now()
+                // Clear action history for this list since all comparisons were reset
+                this.actionHistory = this.actionHistory.filter(action => action.listId !== this.activeListId)
             }
         },
         editListName(id: string, newName: string) {
@@ -115,6 +148,10 @@ export const useListStore = defineStore('list', {
                 list.games = list.games.filter(g => g.itemA !== id && g.itemB !== id)
                 // Remove log entries involving this item
                 list.log = list.log.filter(entry => !entry.includes(item.label))
+                // Clear action history for actions involving this item
+                this.actionHistory = this.actionHistory.filter(action => 
+                    !action.gameId.includes(id)
+                )
                 list.updatedAt = Date.now()
             }
         },
@@ -125,8 +162,8 @@ export const useListStore = defineStore('list', {
                 (g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)
             )
             
-            // Store the previous state for undo
-            const gameId = `game-${a}-${b}`
+            // Use existing game's ID if it exists, otherwise create new one
+            const gameId = existing ? existing.id : `game-${a}-${b}`
             const previousState = existing ? { ...existing } : null
             
             const game: Game = {
@@ -147,33 +184,57 @@ export const useListStore = defineStore('list', {
             list.updatedAt = Date.now()
             
             // Track this action for undo
-            this.lastAction = {
-                type: 'comparison',
+            const action = {
+                type: 'comparison' as const,
                 gameId,
-                previousState
+                listId: this.activeListId,
+                previousState,
+                timestamp: Date.now()
             }
+            
+            // Add to history (keep last 20 actions per list)
+            this.actionHistory.unshift(action)
+            
+            // Limit history size and only keep actions for current lists
+            const validListIds = this.lists.map(l => l.id)
+            this.actionHistory = this.actionHistory
+                .filter(action => validListIds.includes(action.listId))
+                .slice(0, 20)
         },
         undoLastAction() {
-            if (!this.lastAction || this.lastAction.type !== 'comparison') {
-                return false
-            }
+            return this.undoAction(this.lastAction?.gameId)
+        },
+        undoAction(gameId?: string) {
+            if (!gameId) return false
             
+            // Find the action in history
+            const actionIndex = this.actionHistory.findIndex(action => 
+                action.gameId === gameId && 
+                action.listId === this.activeListId &&
+                action.type === 'comparison'
+            )
+            
+            if (actionIndex === -1) return false
+            
+            const action = this.actionHistory[actionIndex]
             const list = this.list
-            const { gameId, previousState } = this.lastAction
             
-            if (previousState) {
+            if (action.previousState) {
                 // Restore the previous state of the game
                 const gameIndex = list.games.findIndex(g => g.id === gameId)
                 if (gameIndex !== -1) {
-                    list.games[gameIndex] = { ...previousState }
+                    list.games[gameIndex] = { ...action.previousState }
                 }
             } else {
                 // Remove the game entirely (it was newly created)
                 list.games = list.games.filter(g => g.id !== gameId)
             }
             
+            // Remove this action and all newer actions for this game
+            // (to prevent inconsistent state)
+            this.actionHistory = this.actionHistory.filter((_, index) => index !== actionIndex)
+            
             list.updatedAt = Date.now()
-            this.lastAction = null
             return true
         },
         addLogEntry(entry: string) {

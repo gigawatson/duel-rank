@@ -5,7 +5,7 @@
   with elegant list switching and key statistics.
 -->
 <template>
-  <div class="relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 rounded-2xl">
+  <div class="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-violet-500 to-slate-700 rounded-lg">
     <!-- Background Pattern -->
     <div class="absolute inset-0 bg-black/10"></div>
     <div class="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"></div>
@@ -15,9 +15,9 @@
         <!-- Main List Info -->
         <div class="flex items-center space-x-4">
           <!-- List Icon -->
-          <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
-            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v11a2 2 0 002 2h5.586a1 1 0 00.707-.293l5.414-5.414a1 1 0 00.293-.707V7a2 2 0 00-2-2H14m-5 0V3a1 1 0 011-1h3a1 1 0 011 1v2m-5 0h5m-5 4h5m-5 4h5"></path>
+          <div class="w-14 h-14 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg flex items-center justify-center inset-ring inset-ring-violet-700/30">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-7 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
             </svg>
           </div>
           
@@ -25,25 +25,12 @@
           <div>
             <div class="flex items-center space-x-2 mb-1">
               <h1 class="text-2xl font-bold text-white">{{ activeList?.name || 'No List Selected' }}</h1>
-              <div class="px-2 py-1 bg-white/20 rounded-full">
-                <span class="text-xs font-medium text-white/90">Ranking Mode</span>
-              </div>
+              <span class="px-3 py-1.5 text-xs font-medium bg-white/20 text-white/90 rounded-full">Ranking Mode</span>
             </div>
             
             <!-- Stats Row -->
-            <div class="flex items-center space-x-4 text-white/80">
-              <div class="flex items-center space-x-1.5">
-                <div class="w-1.5 h-1.5 bg-emerald-300 rounded-full"></div>
-                <span class="text-sm font-medium">{{ activeList?.items.length || 0 }} items</span>
-              </div>
-              <div class="flex items-center space-x-1.5">
-                <div class="w-1.5 h-1.5 bg-blue-300 rounded-full"></div>
-                <span class="text-sm font-medium">{{ activeList?.games.length || 0 }} comparisons</span>
-              </div>
-              <div class="flex items-center space-x-1.5">
-                <div class="w-1.5 h-1.5 bg-amber-300 rounded-full"></div>
-                <span class="text-sm font-medium">{{ formatDate(activeList?.createdAt) }}</span>
-              </div>
+            <div class="text-sm font-medium text-white/80">
+              {{ activeList?.items.length || 0 }} items • {{ activeList?.games.length || 0 }} comparisons • {{ formatDate(activeList?.createdAt) }}
             </div>
           </div>
         </div>
@@ -55,7 +42,7 @@
             <button
               ref="dropdownButton"
               @click="toggleDropdown"
-              class="flex items-center space-x-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-200 group cursor-pointer"
+              class="flex items-center space-x-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-200 group cursor-pointer"
             >
               <span class="text-sm font-medium text-white">{{ lists.length }} lists</span>
               <svg class="w-4 h-4 text-white/70 group-hover:text-white transition-colors" :class="{ 'rotate-180': showListSelector }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +59,7 @@
   <Teleport to="body">
     <div v-if="showListSelector && dropdownPosition" 
          data-dropdown
-         class="fixed w-64 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50"
+         class="fixed w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
          :style="{ top: dropdownPosition.top + 'px', left: dropdownPosition.left + 'px' }">
       <div class="p-2">
         <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2">Select List</div>
@@ -81,8 +68,8 @@
             v-for="list in lists"
             :key="list.id"
             @click="handleSwitchList(list.id)"
-            class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors group flex items-center justify-between cursor-pointer"
-            :class="list.id === selectedListId ? 'bg-blue-50 border border-blue-200' : ''"
+            class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-100/80 transition-colors group flex items-center justify-between cursor-pointer"
+            :class="list.id === selectedListId ? 'bg-indigo-50 border border-indigo-200 hover:bg-indigo-50 hover:cursor-default' : ''"
           >
             <span class="flex-1 min-w-0">
               <span class="font-medium text-gray-900 truncate block">{{ list.name }}</span>
@@ -90,7 +77,7 @@
                 {{ list.items.length }} items • {{ list.games.length }} comparisons
               </span>
             </span>
-            <span v-if="list.id === selectedListId" class="ml-2 w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
+            <span v-if="list.id === selectedListId" class="ml-2 w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0"></span>
           </button>
         </div>
       </div>
@@ -101,6 +88,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useListStore } from '../stores/useListStore'
+import { validateListForComparison } from '../utils/validation'
 
 // Store access
 const store = useListStore()
@@ -112,7 +100,7 @@ const dropdownButton = ref<HTMLElement>()
 const dropdownPosition = ref<{ top: number; left: number } | null>(null)
 
 // Computed properties
-const lists = computed(() => store.allLists)
+const lists = computed(() => store.allLists.filter(list => validateListForComparison(list.items)))
 const activeList = computed(() => store.list)
 
 /**
