@@ -13,34 +13,15 @@
     <!-- Comparison Header -->
     <ComparisonHeader />
 
-    <!-- Progress Bar - Compact supporting information -->
-    <div class="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl p-6">
-        <!-- Simplified Progress Display -->
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-semibold text-gray-800">Progress</h3>
-          <div class="text-sm text-gray-600">
-            {{ stats.completed }} / {{ stats.total }} comparisons ({{ stats.percent }}%)
-          </div>
-        </div>
-
-        <!-- Simple Progress Bar -->
-        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div
-              class="h-3 rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-blue-500 to-purple-600"
-              :style="{ width: stats.percent + '%' }"
-          >
-          </div>
-        </div>
-
-        <!-- Progress Status -->
-        <div class="flex justify-between text-xs text-gray-500 mt-2">
-          <span v-if="remainingPairs > 0">{{ remainingPairs }} pairs remaining</span>
-          <span v-else-if="stats.percent === 100">🎉 All comparisons complete!</span>
-          <span v-else>Ready for more comparisons</span>
-
-          <span v-if="refining" class="text-purple-600 font-medium">Refining mode</span>
-        </div>
-    </div>
+    <!-- Progress Display -->
+    <ComparisonProgress 
+      :stats="stats"
+      :remaining-pairs="remainingPairs"
+      :refining="refining"
+      :has-any-comparisons="hasAnyComparisons"
+      :is-comparison-complete="isComparisonComplete"
+      @start-refining="startRefining"
+    />
 
     <!-- MAIN COMPARISON SECTION - Front and Center, right after header -->
     <div v-if="currentGame" class="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-800/15 inset-ring inset-ring-white rounded-lg px-10 py-14">
@@ -51,29 +32,16 @@
           :can-undo="canUndo"
           @choose="choose"
           @skip="skip"
-          @undo="undoLastComparison"
-        />
-      </div>
-    </div>
-
-    <!-- Completion Status - Also prominent when active -->
-    <div v-else-if="itemCount >= 2" class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-8 shadow-lg">
-      <div class="max-w-4xl mx-auto">
-        <CompletionStatus
-            :remaining-pairs="remainingPairs"
-            :refining="refining"
-            :has-any-comparisons="hasAnyComparisons"
-            :is-comparison-complete="isComparisonComplete"
-            @start-refining="startRefining"
+          @undo="undoLastComparisonWithConfirmation"
         />
       </div>
     </div>
 
     <!-- Results & Analysis Section - Styled to match other sections -->
-    <div class="bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 border-2 border-gray-200 rounded-2xl p-8 shadow-sm">
+    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8">
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-8">
-          <h3 class="text-2xl font-bold text-gray-800 mb-2">Results & Analysis</h3>
+          <h3 class="text-3xl font-bold text-gray-800 mb-2">Results & Analysis</h3>
           <p class="text-gray-600">Track your progress and explore the emerging rankings</p>
         </div>
         <!-- Comparison Log - Full Width, Prominent Position -->
@@ -83,16 +51,16 @@
             :can-undo="canUndo"
             :can-undo-comparison="canUndoComparison"
             :items="list.items"
-            @undo="undoLastComparison"
-            @undo-comparison="undoComparison"
+            @undo="undoLastComparisonWithConfirmation"
+            @undo-comparison="undoComparisonWithConfirmation"
           />
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 gap-8">
           <!-- Left Column: Rankings -->
           <div class="space-y-6">
             <!-- Enhanced Rankings Display -->
-            <EnhancedRankingsList 
+            <ComparisonRankingsList 
               :ranking="ranking"
               :list="list"
               :get-label="labelFor"
@@ -113,17 +81,32 @@
       </div>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <ConfirmationModal
+    :is-open="confirmationState.isOpen"
+    :type="confirmationState.type"
+    :title="confirmationState.title"
+    :subtitle="confirmationState.subtitle"
+    :message="confirmationState.message"
+    :confirm-text="confirmationState.confirmText"
+    :cancel-text="confirmationState.cancelText"
+    @confirm="handleConfirm"
+    @dismiss="handleCancel"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, nextTick } from 'vue'
 import { useComparison } from '../composables/useComparison'
+import { useConfirmation } from '../composables/useConfirmation'
 import ComparisonHeader from './ComparisonHeader.vue'
+import ComparisonProgress from './ComparisonProgress.vue'
 import ComparisonChoice from './ComparisonChoice.vue'
-import CompletionStatus from './CompletionStatus.vue'
-import EnhancedRankingsList from './EnhancedRankingsList.vue'
+import ComparisonRankingsList from './ComparisonRankingsList.vue'
 import ComparisonHistoryVisualization from './ComparisonHistoryVisualization.vue'
 import ComparisonLog from './ComparisonLog.vue'
+import ConfirmationModal from './ConfirmationModal.vue'
 
 // Use comparison composable for all comparison logic
 const {
@@ -148,6 +131,40 @@ const {
   isDirectlyConfirmed,
   toggleComparing
 } = useComparison()
+
+// Confirmation modal
+const { confirmationState, showConfirmation, handleConfirm, handleCancel } = useConfirmation()
+
+// Wrapper functions for undo operations with confirmation
+const undoLastComparisonWithConfirmation = async () => {
+  const confirmed = await showConfirmation({
+    type: 'warning',
+    title: 'Undo Comparison',
+    subtitle: 'Are you sure?',
+    message: 'This will remove your last comparison from the history and update your ranking. This action cannot be undone.',
+    confirmText: 'Undo Comparison',
+    cancelText: 'Keep Comparison'
+  })
+  
+  if (confirmed) {
+    undoLastComparison()
+  }
+}
+
+const undoComparisonWithConfirmation = async (gameId: string) => {
+  const confirmed = await showConfirmation({
+    type: 'warning',
+    title: 'Undo Comparison',
+    subtitle: 'Are you sure?',
+    message: 'This will remove this comparison from your history and update your ranking. This action cannot be undone.',
+    confirmText: 'Undo Comparison',
+    cancelText: 'Keep Comparison'
+  })
+  
+  if (confirmed) {
+    undoComparison(gameId)
+  }
+}
 
 // Keyboard shortcuts
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -180,7 +197,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
     case 'u':
       if (canUndo.value) {
         event.preventDefault()
-        undoLastComparison()
+        undoLastComparisonWithConfirmation()
       }
       break
   }
@@ -189,12 +206,24 @@ const handleKeyDown = (event: KeyboardEvent) => {
 // Auto-start comparison when this component is mounted
 const autoStart = () => {
   if (!comparing.value) {
-    toggleComparing()
+    // Don't use toggleComparing() if we're already in refining mode
+    // because it would clear the refining state
+    if (refining.value) {
+      comparing.value = true
+      // Need to manually trigger updateGame since we bypassed toggleComparing
+      // Use nextTick to ensure the comparison state is set first
+      nextTick(() => {
+        // Access updateGame through the composable's internal structure
+        toggleComparing()
+        // Now restore refining state that was cleared
+        startRefining()
+      })
+    } else {
+      toggleComparing()
+    }
   }
 }
 
-// Local computed properties
-const itemCount = computed(() => list.value.items.length)
 
 // Set up keyboard listeners and auto-start
 onMounted(() => {

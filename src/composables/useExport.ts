@@ -59,9 +59,6 @@ export function useExport() {
           mimeType = 'text/plain'
           fileExtension = 'txt'
           break
-        
-        default:
-          throw new Error(`Unsupported export format: ${format}`)
       }
 
       const filename = generateFilename(list.name, fileExtension)
@@ -99,8 +96,6 @@ export function useExport() {
         case 'simple':
           content = exportAsSimple(list, getLabelFn)
           break
-        default:
-          throw new Error(`Unsupported format: ${format}`)
       }
 
       await navigator.clipboard.writeText(content)

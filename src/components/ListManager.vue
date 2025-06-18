@@ -216,7 +216,7 @@
       :confirm-text="confirmationState.confirmText"
       :cancel-text="confirmationState.cancelText"
       @confirm="handleConfirm"
-      @cancel="handleCancel"
+      @dismiss="handleCancel"
     />
   </div>
 </template>

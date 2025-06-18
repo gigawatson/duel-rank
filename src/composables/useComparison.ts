@@ -15,8 +15,10 @@ export function useComparison() {
   
   // Reactive state
   const comparing = ref(false)
-  const refining = ref(false)
   const currentGame = ref<[string, string] | null>(null)
+  
+  // Computed properties from store
+  const refining = computed(() => store.isRefining)
   
 
   // Computed properties
@@ -177,7 +179,8 @@ export function useComparison() {
     const result: GameResult = winner === a ? 'A' : 'B'
     
     store.recordGame(a, b, result)
-    store.addLogEntry(`${labelFor(a)} vs ${labelFor(b)} → winner: ${labelFor(winner)}`)
+    const loser = winner === a ? labelFor(b) : labelFor(a)
+    store.addLogEntry(`${labelFor(winner)} beat ${loser}`)
     updateGame()
   }
 
@@ -189,7 +192,7 @@ export function useComparison() {
     
     const [a, b] = currentGame.value
     store.recordGame(a, b, 'skip')
-    store.addLogEntry(`${labelFor(a)} vs ${labelFor(b)} → skipped`)
+    store.addLogEntry(`${labelFor(a)} vs ${labelFor(b)} (skipped)`)
     updateGame()
   }
 
@@ -198,7 +201,7 @@ export function useComparison() {
    */
   const toggleComparing = () => {
     comparing.value = !comparing.value
-    refining.value = false
+    store.stopRefining()
     if (comparing.value) {
       updateGame()
     }
@@ -208,8 +211,22 @@ export function useComparison() {
    * Starts the refining process to get more precise rankings
    */
   const startRefining = () => {
-    refining.value = true
+    store.startRefining()
     updateGame()
+  }
+
+  /**
+   * Checks if we should automatically exit refining mode
+   * (when undoing comparisons brings us back to incomplete initial state)
+   */
+  const checkAndExitRefining = () => {
+    // Only check if we're currently in refining mode
+    if (refining.value) {
+      // If the initial ranking is no longer complete, exit refining mode
+      if (!isComparisonComplete.value) {
+        store.stopRefining()
+      }
+    }
   }
 
   /**
@@ -220,6 +237,8 @@ export function useComparison() {
     if (success) {
       // Remove the last log entry
       store.removeLastLogEntry()
+      // Check if we should exit refining mode
+      checkAndExitRefining()
       // Update the current game
       updateGame()
     }
@@ -230,26 +249,12 @@ export function useComparison() {
    * Undoes a specific comparison by gameId
    */
   const undoComparison = (gameId: string) => {
-    // Find which log entry corresponds to this gameId
-    const logIndex = list.value.log.findIndex(entry => {
-      // Extract game info from log entry to match with gameId
-      const match = entry.match(/(.+) vs (.+) → (winner: (.+)|skipped)/)
-      if (match) {
-        const [, itemA, itemB] = match
-        const itemAId = list.value.items.find(item => item.label === itemA)?.id
-        const itemBId = list.value.items.find(item => item.label === itemB)?.id
-        const expectedGameId = `game-${itemAId}-${itemBId}`
-        return expectedGameId === gameId || `game-${itemBId}-${itemAId}` === gameId
-      }
-      return false
-    })
-
     const success = store.undoAction(gameId)
-    if (success && logIndex !== -1) {
-      // Remove the corresponding log entry
-      const newLog = [...list.value.log]
-      newLog.splice(logIndex, 1)
-      list.value.log = newLog
+    if (success) {
+      // Rebuild log from current games state instead of trying to find and remove entries
+      store.rebuildLogFromGames()
+      // Check if we should exit refining mode
+      checkAndExitRefining()
       // Update the current game
       updateGame()
     }

@@ -64,7 +64,7 @@ interface Props {
 
 interface Emits {
   (e: 'confirm'): void
-  (e: 'cancel'): void
+  (e: 'dismiss'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -102,6 +102,6 @@ const handleConfirm = () => {
 }
 
 const handleCancel = () => {
-  emit('cancel')
+  emit('dismiss')
 }
 </script>

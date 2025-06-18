@@ -10,12 +10,11 @@
 <template>
   <div class="bg-white border border-gray-200 rounded-lg p-4">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="font-semibold text-gray-800 flex items-center">
-        <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+      <h3 class="text-xl font-bold text-gray-800 flex items-center">
         Comparison Network
       </h3>
       
-      <div v-if="games.length > 0" class="flex items-center space-x-4 text-sm">
+      <div v-if="games.length > 0" class="flex items-center space-x-4 text-sm md:text-base">
         <div class="flex items-center space-x-2">
           <div class="w-3 h-0.5 bg-green-500"></div>
           <span class="text-gray-600">Won</span>
@@ -34,16 +33,16 @@
     <!-- Content: Either visualization or empty state -->
     <div v-if="games.length > 0">
       <!-- SVG Network Visualization -->
-    <div class="relative bg-gray-50 rounded-lg p-4 overflow-hidden">
+    <div class="relative bg-gray-50 rounded-lg p-6 overflow-hidden">
       <svg 
         viewBox="0 0 600 400"
-        class="w-full h-auto border border-gray-200 rounded max-w-full"
+        class="w-full h-auto border border-gray-300 rounded max-w-full"
         @mouseleave="clearHover"
       >
         <!-- Background Grid -->
         <defs>
           <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" stroke-width="1"/>
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e8e8e8" stroke-width="1"/>
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
@@ -70,7 +69,7 @@
           <g
             v-for="node in nodes"
             :key="node.id"
-            class="cursor-pointer transition-all duration-300 hover:opacity-90"
+            class="cursor-pointer transition-all duration-300"
             @mouseenter="hoverItem(node.id)"
             @click="selectItem(node.id)"
           >
@@ -84,8 +83,8 @@
               :stroke-width="node.strokeWidth"
               class="transition-all duration-300"
               :class="{ 
-                'drop-shadow-lg stroke-blue-500 stroke-2': hoveredItem === node.id,
-                'stroke-blue-300 stroke-2': selectedItem === node.id
+                'drop-shadow-lg stroke-gray-900 stroke-2': hoveredItem === node.id,
+                'stroke-gray-900 stroke-2 drop-shadow-lg': selectedItem === node.id
               }"
             />
             
@@ -109,15 +108,15 @@
               :cx="node.x + node.radius - 5"
               :cy="node.y - node.radius + 5"
               r="8"
-              fill="#10b981"
-              class="drop-shadow-sm"
+              fill="currentColor"
+              class="drop-shadow-sm text-green-700"
             />
             <text
               v-if="node.winCount > 0"
-              :x="node.x + node.radius - 5"
-              :y="node.y - node.radius + 9"
+              :x="node.x + node.radius - 4.9"
+              :y="node.y - node.radius + 8.2"
               text-anchor="middle"
-              class="text-xs font-bold fill-white"
+              class="text-[9px] font-light fill-white"
             >
               {{ node.winCount }}
             </text>
@@ -155,7 +154,7 @@
       </svg>
 
       <!-- Legend and Stats -->
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div class="bg-white border border-gray-200 rounded p-3">
           <div class="font-semibold text-gray-700">Network Stats</div>
           <div class="text-gray-600">{{ nodes.length }} items • {{ edges.length }} comparisons</div>
@@ -174,14 +173,14 @@
     </div>
 
     <!-- Detailed Comparison Matrix -->
-    <div v-if="selectedItem" class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <h4 class="font-semibold text-blue-800 mb-2">
-        {{ getLabel(selectedItem) }} - Detailed Comparisons
+    <div v-if="selectedItem" class="mt-6 bg-gray-50 border border-gray-300 rounded-lg p-6">
+      <h4 class="font-semibold text-gray-800 mb-2">
+         Detailed Comparisons for {{ getLabel(selectedItem) }}
       </h4>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
         <div>
-          <div class="font-medium text-green-700">Victories ({{ getItemWins(selectedItem).length }})</div>
+          <div class="font-medium text-green-700 mb-2">Victories ({{ getItemWins(selectedItem).length }})</div>
           <div class="space-y-1">
             <div 
               v-for="win in getItemWins(selectedItem)" 
@@ -194,7 +193,7 @@
         </div>
         
         <div>
-          <div class="font-medium text-red-700">Defeats ({{ getItemLosses(selectedItem).length }})</div>
+          <div class="font-medium text-red-700 mb-2">Defeats ({{ getItemLosses(selectedItem).length }})</div>
           <div class="space-y-1">
             <div 
               v-for="loss in getItemLosses(selectedItem)" 
@@ -210,38 +209,27 @@
     </div>
     
     <!-- Interaction hint - shows when there are nodes to click -->
-    <div v-if="games.length > 0" class="text-center mt-3 text-xs text-gray-500">
-      <p>💡 Click on any node to see detailed comparison breakdown</p>
+    <div v-if="games.length > 0" class="text-center mt-8 mb-4 text-xs text-gray-500">
+      <p>Click on any node to see detailed comparison breakdown.</p>
     </div>
 
     <!-- Empty State when no games yet -->
-    <div v-else class="relative bg-gray-50 rounded-lg p-8 text-center">
+    <div v-else class="bg-gradient-to-t from-emerald-50 to-gray-50 border border-green-800/20 inset-ring inset-ring-white rounded-lg p-12 text-center">
       <div class="space-y-4">
-        <div class="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
-          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        <div class="w-14 h-14 mx-auto bg-gradient-to-br from-emerald-100 to-green-300 ring-1 ring-emerald-300 inset-ring inset-ring-white rounded-lg flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-7 text-emerald-800">
+            <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
           </svg>
         </div>
         <div>
-          <h4 class="font-semibold text-gray-700 mb-2">No comparisons yet</h4>
-          <p class="text-gray-500 text-sm">
-            The comparison network will appear here as you make choices between items.
-            <br>
-            Each item will be a node, and your comparisons will be connections between them.
-          </p>
-        </div>
-        <div class="text-xs text-gray-400 border-t border-gray-200 pt-4 space-y-2">
-          <p>💡 Start comparing items to see this visualization come to life!</p>
-          <p class="flex items-center justify-center space-x-1 text-purple-500">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-            </svg>
-            <span>Click on nodes for detailed comparison breakdown</span>
+          <h4 class="font-semibold text-emerald-800 mb-2 text-lg">No Comparisons Yet</h4>
+          <p class="text-emerald-600 max-w-md mx-auto">
+            The comparison network will appear here as you make choices between items. Each item will be a node, and your comparisons will be connections between them.
           </p>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -318,7 +306,7 @@ const nodes = computed(() => {
       winCount: stats.wins,
       lossCount: stats.losses,
       color: getNodeColor(stats.wins, stats.losses),
-      strokeColor: hoveredItem.value === item.id ? '#3b82f6' : '#6b7280',
+      strokeColor: hoveredItem.value === item.id ? '#3b82f6' : 'transparent',
       strokeWidth: hoveredItem.value === item.id ? 3 : 2
     }
   })
@@ -338,14 +326,14 @@ const edges = computed(() => {
       
       if (!fromNode || !toNode) return null
       
-      let color = '#9ca3af' // gray for skipped
+      let color = 'oklch(70.7% 0.022 261.325)' // gray for skipped
       let width = 2
       
       if (game.winner && !game.skipped) {
         if (game.winner === game.itemA) {
-          color = '#10b981' // green - A won
+          color = 'oklch(72.3% 0.219 149.579)' // green - A won
         } else {
-          color = '#ef4444' // red - A lost
+          color = 'oklch(63.7% 0.237 25.331)' // red - A lost
         }
         width = 3
       }
@@ -417,10 +405,10 @@ const getNodeColor = (wins: number, losses: number): string => {
   if (total === 0) return '#e5e7eb' // gray
   
   const winRate = wins / total
-  if (winRate >= 0.7) return '#10b981' // green
-  if (winRate >= 0.5) return '#3b82f6' // blue
-  if (winRate >= 0.3) return '#f59e0b' // amber
-  return '#ef4444' // red
+  if (winRate >= 0.7) return 'oklch(72.3% 0.219 149.579)' // green
+  if (winRate >= 0.5) return 'oklch(51.1% 0.262 276.966)' // blue
+  if (winRate >= 0.3) return 'oklch(51.1% 0.262 276.966)' // amber
+  return 'oklch(63.7% 0.237 25.331)' // red
 }
 
 /**

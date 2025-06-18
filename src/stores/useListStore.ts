@@ -20,6 +20,7 @@ export const useListStore = defineStore('list', {
     state: () => ({
         lists: useStorage<List[]>(STORAGE_KEYS.LISTS, []),
         activeListId: useStorage<string>(STORAGE_KEYS.ACTIVE_LIST_ID, ''),
+        refiningStates: useStorage<Record<string, boolean>>(STORAGE_KEYS.REFINING_STATES, {}),
         actionHistory: useStorage<{ type: 'comparison', gameId: string, listId: string, previousState?: any, timestamp: number }[]>(STORAGE_KEYS.LAST_ACTION, [], localStorage, {
             serializer: {
                 read: (v: any) => {
@@ -64,6 +65,9 @@ export const useListStore = defineStore('list', {
                 .filter(action => action.listId === state.activeListId)
                 .sort((a, b) => b.timestamp - a.timestamp)
             return recentActions[0] || null
+        },
+        isRefining(state): boolean {
+            return state.refiningStates[state.activeListId] || false
         }
     },
     actions: {
@@ -79,6 +83,8 @@ export const useListStore = defineStore('list', {
         },
         deleteList(id: string) {
             this.lists = this.lists.filter(l => l.id !== id)
+            // Clean up refining state for deleted list
+            delete this.refiningStates[id]
             if (this.activeListId === id) {
                 if (this.lists.length > 0) {
                     this.activeListId = this.lists[0].id
@@ -94,6 +100,8 @@ export const useListStore = defineStore('list', {
                 const newList = createEmptyList(name)
                 this.lists[index] = newList
                 this.activeListId = newList.id
+                // Clear refining state since comparisons were reset
+                delete this.refiningStates[this.activeListId]
                 // Clear action history since all games were reset
                 this.actionHistory = this.actionHistory.filter(action => action.listId !== this.activeListId)
             }
@@ -105,6 +113,8 @@ export const useListStore = defineStore('list', {
                 list.games = []
                 list.log = []
                 list.updatedAt = Date.now()
+                // Clear refining state since comparisons were reset
+                delete this.refiningStates[this.activeListId]
                 // Clear action history for this list since all comparisons were reset
                 this.actionHistory = this.actionHistory.filter(action => action.listId !== this.activeListId)
             }
@@ -129,13 +139,9 @@ export const useListStore = defineStore('list', {
             const list = this.list
             const item = list.items.find(i => i.id === id)
             if (item) {
-                const oldLabel = item.label
                 item.label = newLabel
-                // Update log entries to reflect the new label
-                list.log = list.log.map(entry => 
-                    entry.replace(new RegExp(oldLabel, 'g'), newLabel)
-                )
-                list.updatedAt = Date.now()
+                // Rebuild log from games to reflect the new label
+                this.rebuildLogFromGames()
             }
         },
         removeItem(id: string) {
@@ -146,13 +152,12 @@ export const useListStore = defineStore('list', {
                 list.items = list.items.filter(i => i.id !== id)
                 // Remove games involving this item
                 list.games = list.games.filter(g => g.itemA !== id && g.itemB !== id)
-                // Remove log entries involving this item
-                list.log = list.log.filter(entry => !entry.includes(item.label))
+                // Rebuild log from remaining games
+                this.rebuildLogFromGames()
                 // Clear action history for actions involving this item
                 this.actionHistory = this.actionHistory.filter(action => 
                     !action.gameId.includes(id)
                 )
-                list.updatedAt = Date.now()
             }
         },
         recordGame(a: string, b: string, result: 'A' | 'B' | 'skip') {
@@ -249,10 +254,41 @@ export const useListStore = defineStore('list', {
                 list.updatedAt = Date.now()
             }
         },
-        clearLog() {
+        rebuildLogFromGames() {
             const list = this.list
-            list.log = []
+            if (!list.games || list.games.length === 0) {
+                list.log = []
+                return
+            }
+            
+            // Get item label by ID
+            const getItemLabel = (id: string): string => {
+                return list.items.find(item => item.id === id)?.label || 'Unknown'
+            }
+            
+            // Rebuild log from games in reverse chronological order (newest first)
+            list.log = list.games
+                .filter(g => g.winner || g.skipped)
+                .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+                .map(g => {
+                    const labelA = getItemLabel(g.itemA)
+                    const labelB = getItemLabel(g.itemB)
+                    if (g.skipped) {
+                        return `${labelA} vs ${labelB} (skipped)`
+                    } else {
+                        const winner = getItemLabel(g.winner!)
+                        const loser = winner === labelA ? labelB : labelA
+                        return `${winner} beat ${loser}`
+                    }
+                })
+            
             list.updatedAt = Date.now()
+        },
+        startRefining() {
+            this.refiningStates[this.activeListId] = true
+        },
+        stopRefining() {
+            this.refiningStates[this.activeListId] = false
         }
     }
 })
