@@ -10,7 +10,7 @@
         <span>Comparison History</span>
       </h2>
       <div v-if="log.length > 0" class="text-xs text-gray-500">
-        {{ log.length }} {{ log.length === 1 ? 'comparison' : 'comparisons' }}
+        {{ getCompletedComparisonsFromLog(log) }} {{ getCompletedComparisonsFromLog(log) === 1 ? 'comparison' : 'comparisons' }}
       </div>
     </div>
     
@@ -90,6 +90,7 @@
 </template>
 
 <script setup lang="ts">
+import { getCompletedComparisonsFromLog } from '../utils/comparison'
 /**
  * Props for the ComparisonLog component
  */
@@ -184,4 +185,5 @@ const handleUndoClick = (entry: string) => {
     emit('undoComparison', gameId)
   }
 }
+
 </script>

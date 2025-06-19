@@ -30,7 +30,7 @@
             
             <!-- Stats Row -->
             <div class="text-sm font-medium text-white/80">
-              {{ activeList?.items.length || 0 }} items • {{ activeList?.games.length || 0 }} comparisons • {{ formatDate(activeList?.createdAt) }}
+              {{ activeList?.items.length || 0 }} items • {{ getCompletedComparisons(activeList) }} comparisons • {{ formatDate(activeList?.createdAt) }}
             </div>
           </div>
         </div>
@@ -74,7 +74,7 @@
             <span class="flex-1 min-w-0">
               <span class="font-medium text-gray-900 truncate block">{{ list.name }}</span>
               <span class="text-xs text-gray-500 block">
-                {{ list.items.length }} items • {{ list.games.length }} comparisons
+                {{ list.items.length }} items • {{ getCompletedComparisons(list) }} comparisons
               </span>
             </span>
             <span v-if="list.id === selectedListId" class="ml-2 w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0"></span>
@@ -89,6 +89,7 @@
 import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useListStore } from '../stores/useListStore'
 import { validateListForComparison } from '../utils/validation'
+import { getCompletedComparisons } from '../utils/comparison'
 
 // Store access
 const store = useListStore()

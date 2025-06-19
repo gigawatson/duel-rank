@@ -99,7 +99,7 @@
                   <span v-if="list.id === selectedListId" class="px-2 py-1 text-xs bg-indigo-600 text-white rounded-md">Active</span>
                 </div>
                 <div class="text-sm text-gray-500 mt-1">
-                  {{ list.items.length }} items • {{ list.games.length }} comparisons • {{ formatDate(list.createdAt) }}
+                  {{ list.items.length }} items • {{ getCompletedComparisons(list) }} comparisons • {{ formatDate(list.createdAt) }}
                 </div>
               </div>
             </div>
@@ -227,6 +227,7 @@ import { useListStore } from '../stores/useListStore'
 import { useValidatedInput } from '../composables/useFormValidation'
 import { useConfirmation } from '../composables/useConfirmation'
 import { validateListName } from '../utils/validation'
+import { getCompletedComparisons } from '../utils/comparison'
 import ConfirmationModal from './ConfirmationModal.vue'
 
 // Define emits

@@ -220,7 +220,7 @@
       <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div class="bg-white border border-gray-200 rounded p-3">
           <div class="font-semibold text-gray-700">Network Stats</div>
-          <div class="text-gray-600">{{ nodes.length }} items • {{ edges.length }} comparisons</div>
+          <div class="text-gray-600">{{ nodes.length }} items • {{ completedComparisons }} comparisons</div>
         </div>
         
         <div class="bg-white border border-gray-200 rounded p-3">
@@ -297,6 +297,7 @@
 </template>
 
 <script setup lang="ts">
+import { getCompletedComparisons } from '../utils/comparison'
 import { computed, ref } from 'vue'
 import type { Game } from '../types'
 
@@ -514,6 +515,13 @@ const edges = computed(() => {
  */
 const hoveredNode = computed(() => {
   return hoveredItem.value ? nodes.value.find(node => node.id === hoveredItem.value) : null
+})
+
+/**
+ * Count of completed comparisons (excluding skipped games)
+ */
+const completedComparisons = computed(() => {
+  return getCompletedComparisons({ games: props.games })
 })
 
 /**
