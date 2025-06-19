@@ -9,7 +9,7 @@
   - Hover effects and detailed tooltips
 -->
 <template>
-  <div class="p-6 border border-gray-300 rounded-lg bg-white">
+  <div class="p-6 border border-gray-300 rounded-xl bg-white">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-bold text-gray-800 flex items-center">Live Ranking</h2>
       
@@ -56,7 +56,7 @@
                 
                 <!-- Confidence Badge -->
                 <div 
-                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
                   :class="getConfidenceBadgeClass(entry.confidence)"
                 >
                   {{ Math.round(entry.confidence * 100) }}% sure

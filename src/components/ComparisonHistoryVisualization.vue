@@ -8,7 +8,7 @@
   - Visual patterns in comparison decisions
 -->
 <template>
-  <div class="p-6 bg-white border border-gray-200 rounded-lg">
+  <div class="p-6 bg-white border border-gray-200 rounded-xl">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
         Comparison Network
@@ -35,7 +35,7 @@
     <!-- Content: Either visualization or empty state -->
     <div v-if="games.length > 0">
       <!-- SVG Network Visualization -->
-    <div class="relative bg-gray-50 rounded-lg p-6 overflow-hidden">
+    <div class="relative bg-gray-50 rounded-xl p-6 overflow-hidden">
       <svg 
         viewBox="0 0 600 400"
         class="w-full h-auto border border-gray-300 rounded max-w-full"

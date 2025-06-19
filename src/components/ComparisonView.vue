@@ -40,7 +40,7 @@
     </div>
 
     <!-- Results & Analysis Section - Styled to match other sections -->
-    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8">
+    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8">
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-8">
           <h3 class="text-3xl font-bold text-gray-800 mb-2">Results & Analysis</h3>

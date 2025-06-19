@@ -4,7 +4,7 @@
   Enhanced visual log of recent comparisons with rich interactions.
 -->
 <template>
-  <div class="p-6 border border-gray-300 rounded-lg bg-white">
+  <div class="p-6 border border-gray-300 rounded-xl bg-white">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
         <span>Comparison History</span>

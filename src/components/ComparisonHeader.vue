@@ -5,7 +5,7 @@
   with elegant list switching and key statistics.
 -->
 <template>
-  <div class="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-violet-500 to-slate-700 rounded-lg">
+  <div class="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-violet-500 to-slate-700 rounded-xl">
     <!-- Background Pattern -->
     <div class="absolute inset-0 bg-black/10"></div>
     <div class="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"></div>

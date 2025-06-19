@@ -8,7 +8,7 @@
   - Refining mode status
 -->
 <template>
-  <div class="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-6">
+  <div class="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl p-6">
     <!-- Enhanced Progress Display -->
     <div class="flex justify-between items-center mb-3">
       <div class="flex items-center space-x-3">
@@ -54,23 +54,24 @@
         <span 
           v-else-if="stats.percent === 100" 
           class="text-xs font-medium text-white"
-        >
-          🎉 Complete!
-        </span>
+        >Complete!</span>
       </div>
     </div>
 
     <!-- Completion Status -->
     <!-- Initial ranking complete (transitive resolution) but not all directly compared -->
     <div v-if="hasWorkableRanking && !isComparisonComplete && !refining" class="mt-4">
-      <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+      <div class="flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-indigo-200 rounded-xl">
         <div class="flex items-center space-x-2">
-          <span class="text-green-600">✔</span>
-          <span class="text-sm font-medium text-green-700">Initial ranking complete. Some positions are inferred.</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-violet-800">
+            <path d="M11.983 1.907a.75.75 0 0 0-1.292-.657l-8.5 9.5A.75.75 0 0 0 2.75 12h6.572l-1.305 6.093a.75.75 0 0 0 1.292.657l8.5-9.5A.75.75 0 0 0 17.25 8h-6.572l1.305-6.093Z" />
+          </svg>
+
+          <span class="text-sm font-medium text-violet-900">Initial ranking complete. Some positions are inferred.</span>
         </div>
         <button 
           @click="$emit('startRefining')" 
-          class="px-3 py-1.5 text-xs font-medium bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md transition-colors cursor-pointer"
+          class="px-3 py-1.5 text-xs font-medium bg-white border border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 text-indigo-900 rounded-md transition-colors cursor-pointer"
         >
           Continue refining →
         </button>
@@ -79,9 +80,11 @@
     
 
     <div v-else-if="isComparisonComplete && remainingPairs === 0" class="mt-4">
-      <div class="flex items-center space-x-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-        <span class="text-green-600">🎉</span>
-        <span class="text-sm font-medium text-green-700">100% fully ranked! All items directly compared.</span>
+      <div class="flex items-center space-x-2 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-indigo-200 rounded-xl">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 text-violet-800">
+          <path fill-rule="evenodd" d="M16.403 12.652a3 3 0 0 0 0-5.304 3 3 0 0 0-3.75-3.751 3 3 0 0 0-5.305 0 3 3 0 0 0-3.751 3.75 3 3 0 0 0 0 5.305 3 3 0 0 0 3.75 3.751 3 3 0 0 0 5.305 0 3 3 0 0 0 3.751-3.75Zm-2.546-4.46a.75.75 0 0 0-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm font-medium text-violet-900">100% fully ranked! All items directly compared.</span>
       </div>
     </div>
   </div>
