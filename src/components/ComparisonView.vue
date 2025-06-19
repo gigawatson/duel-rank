@@ -20,7 +20,9 @@
       :refining="refining"
       :has-any-comparisons="hasAnyComparisons"
       :is-comparison-complete="isComparisonComplete"
+      :has-workable-ranking="hasWorkableRanking"
       @start-refining="startRefining"
+      @continue-ranking="continueRanking"
     />
 
     <!-- MAIN COMPARISON SECTION - Front and Center, right after header -->
@@ -120,6 +122,7 @@ const {
   list,
   hasAnyComparisons,
   isComparisonComplete,
+  hasWorkableRanking,
   startRefining,
   canUndo,
   choose,
@@ -131,6 +134,18 @@ const {
   isDirectlyConfirmed,
   toggleComparing
 } = useComparison()
+
+// Function to continue ranking when there are skipped comparisons
+const continueRanking = () => {
+  // Enter refining mode to directly compare all remaining pairs
+  if (!refining.value) {
+    startRefining()
+  }
+  // Ensure comparison mode is active
+  if (!comparing.value) {
+    toggleComparing()
+  }
+}
 
 // Confirmation modal
 const { confirmationState, showConfirmation, handleConfirm, handleCancel } = useConfirmation()

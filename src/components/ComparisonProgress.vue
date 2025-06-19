@@ -19,6 +19,9 @@
       </div>
       <div class="text-sm text-gray-600">
         {{ stats.completed }} / {{ stats.total }} comparisons ({{ stats.percent }}%)
+        <span v-if="stats.skipped > 0" class="text-amber-600 ml-2">
+          • {{ stats.skipped }} skipped
+        </span>
       </div>
     </div>
 
@@ -58,7 +61,8 @@
     </div>
 
     <!-- Completion Status -->
-    <div v-if="isComparisonComplete && remainingPairs > 0 && !refining" class="mt-4">
+    <!-- Initial ranking complete (transitive resolution) but not all directly compared -->
+    <div v-if="hasWorkableRanking && !isComparisonComplete && !refining" class="mt-4">
       <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
         <div class="flex items-center space-x-2">
           <span class="text-green-600">✔</span>
@@ -72,6 +76,7 @@
         </button>
       </div>
     </div>
+    
 
     <div v-else-if="isComparisonComplete && remainingPairs === 0" class="mt-4">
       <div class="flex items-center space-x-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
@@ -91,11 +96,13 @@ interface Props {
     completed: number
     total: number
     percent: number
+    skipped: number
   }
   remainingPairs: number
   refining: boolean
   hasAnyComparisons: boolean
   isComparisonComplete: boolean
+  hasWorkableRanking: boolean
 }
 
 /**
@@ -103,6 +110,7 @@ interface Props {
  */
 interface Emits {
   startRefining: []
+  continueRanking: []
 }
 
 defineProps<Props>()

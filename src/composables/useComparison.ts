@@ -27,21 +27,44 @@ export function useComparison() {
   const log = computed(() => list.value.log || [])
 
   /**
-   * Calculates remaining pairs that need comparison
+   * Calculates remaining pairs that need comparison based on the same logic as updateGame
    */
   const remainingPairs = computed(() => {
     const pairs = getAllItemPairs(list.value.items)
     let remaining = 0
     
-    for (const [a, b] of pairs) {
-      const compared = list.value.games.some(g =>
-        ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
-        (refining.value ? g.winner : (g.winner || g.skipped))
-      )
-      if (!compared) {
-        remaining++
+    if (refining.value) {
+      // In refining mode: count pairs that haven't been directly compared with winners
+      for (const [a, b] of pairs) {
+        const compared = list.value.games.some(g =>
+          ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
+          g.winner && !g.skipped
+        )
+        if (!compared) {
+          remaining++
+        }
+      }
+    } else {
+      // In initial mode: count pairs that haven't been directly compared AND can't be resolved transitively
+      if (list.value.games.length === 0) {
+        remaining = pairs.length
+      } else {
+        const graph = buildComparisonGraph(list.value.games)
+        
+        for (const [a, b] of pairs) {
+          const directlyCompared = list.value.games.some(g =>
+            ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
+            (g.winner || g.skipped)
+          )
+          
+          // Count this pair if it hasn't been directly compared AND can't be resolved transitively
+          if (!directlyCompared && !isResolved(graph, a, b)) {
+            remaining++
+          }
+        }
       }
     }
+    
     return remaining
   })
 
@@ -50,10 +73,12 @@ export function useComparison() {
    */
   const stats = computed(() => {
     const total = (list.value.items.length * (list.value.items.length - 1)) / 2
-    const completed = list.value.games.filter(g => (g.winner || g.skipped)).length
+    const completed = list.value.games.filter(g => g.winner && !g.skipped).length
+    const skipped = list.value.games.filter(g => g.skipped).length
     return {
       total,
       completed,
+      skipped,
       percent: Math.round((completed / total) * 100) || 0
     }
   })
@@ -62,14 +87,37 @@ export function useComparison() {
    * Checks if any comparisons have been made
    */
   const hasAnyComparisons = computed(() => {
-    return list.value.games.some(g => g.winner || g.skipped)
+    return list.value.games.some(g => g.winner && !g.skipped)
   })
 
   /**
    * Checks if comparisons are truly complete (not just no games to show)
+   * For "100% fully ranked! All items directly compared." we need ALL pairs to be directly compared with winners
    */
   const isComparisonComplete = computed(() => {
-    // Don't reference currentGame here to avoid circular dependency
+    const pairs = getAllItemPairs(list.value.items)
+    if (pairs.length === 0) return false
+    
+    // Check if ALL pairs have been directly compared with actual winners (no skips, no transitive inference)
+    for (const [a, b] of pairs) {
+      const directlyCompared = list.value.games.some(g =>
+        ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
+        g.winner && !g.skipped
+      )
+      
+      if (!directlyCompared) {
+        return false // This pair hasn't been directly compared with a winner
+      }
+    }
+    
+    return hasAnyComparisons.value // Only complete if we've made comparisons
+  })
+
+  /**
+   * Checks if we have a workable initial ranking (using transitive closure)
+   * This is different from complete - it means we can produce a ranking but it might not be fully direct
+   */
+  const hasWorkableRanking = computed(() => {
     const pairs = getAllItemPairs(list.value.items)
     if (pairs.length === 0) return false
     
@@ -79,7 +127,7 @@ export function useComparison() {
     for (const [a, b] of pairs) {
       const directlyCompared = list.value.games.some(g =>
         ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
-        (g.winner || g.skipped)
+        g.winner && !g.skipped
       )
       
       if (!directlyCompared && !isResolved(graph, a, b)) {
@@ -87,7 +135,7 @@ export function useComparison() {
       }
     }
     
-    return hasAnyComparisons.value // Only complete if we've made comparisons
+    return hasAnyComparisons.value
   })
 
   /**
@@ -124,6 +172,7 @@ export function useComparison() {
         // Use transitive closure to find unresolved pairs
         const graph = buildComparisonGraph(list.value.games)
         
+        // First, find pairs that haven't been compared at all and can't be resolved
         for (const [a, b] of pairs) {
           const directlyCompared = list.value.games.some(g =>
             ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
@@ -133,6 +182,21 @@ export function useComparison() {
           // Include this pair if it hasn't been directly compared AND can't be resolved transitively
           if (!directlyCompared && !isResolved(graph, a, b)) {
             unresolvedPairs.push([a, b])
+          }
+        }
+        
+        // If no unresolved pairs but we don't have a workable ranking, re-present skipped pairs
+        if (unresolvedPairs.length === 0 && !hasWorkableRanking.value) {
+          for (const [a, b] of pairs) {
+            const wasSkipped = list.value.games.some(g =>
+              ((g.itemA === a && g.itemB === b) || (g.itemA === b && g.itemB === a)) &&
+              g.skipped
+            )
+            
+            // Re-present skipped pairs that are still unresolved
+            if (wasSkipped && !isResolved(graph, a, b)) {
+              unresolvedPairs.push([a, b])
+            }
           }
         }
       }
@@ -316,6 +380,7 @@ export function useComparison() {
     stats,
     hasAnyComparisons,
     isComparisonComplete,
+    hasWorkableRanking,
     
     // Methods
     choose,
