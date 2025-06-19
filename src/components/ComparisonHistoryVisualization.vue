@@ -8,11 +8,11 @@
   - Visual patterns in comparison decisions
 -->
 <template>
-  <div class="bg-white border border-gray-200 rounded-lg p-4">
+  <div class="p-6 bg-white border border-gray-200 rounded-lg">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-bold text-gray-800 flex items-center">
+      <h2 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
         Comparison Network
-      </h3>
+      </h2>
       
       <div v-if="games.length > 0" class="flex items-center space-x-4 text-sm md:text-base">
         <div class="flex items-center space-x-2">
@@ -209,7 +209,7 @@
     </div>
     
     <!-- Interaction hint - shows when there are nodes to click -->
-    <div v-if="games.length > 0" class="text-center mt-8 mb-4 text-xs text-gray-500">
+    <div v-if="games.length > 0" class="text-center mt-8 mb-2 text-xs text-gray-500">
       <p>Click on any node to see detailed comparison breakdown.</p>
     </div>
 

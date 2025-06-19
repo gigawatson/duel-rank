@@ -9,9 +9,8 @@
     <!-- Export Button -->
     <button
       @click="showDropdown = !showDropdown"
-      :disabled="!hasRankings"
-      class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium cursor-pointer"
-      :title="hasRankings ? 'Export rankings' : 'No rankings to export'"
+      class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium cursor-pointer"
+      title="Export rankings"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -24,7 +23,7 @@
 
     <!-- Dropdown Menu -->
     <div 
-      v-if="showDropdown && hasRankings" 
+      v-if="showDropdown" 
       @click.stop
       class="absolute right-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
     >
@@ -173,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import type { List } from '../types'
 import { useExport, type ExportFormat } from '../composables/useExport'
 
@@ -192,9 +191,6 @@ const showDropdown = ref(false)
 const message = ref('')
 const messageType = ref<'success' | 'error'>('success')
 const showMessage = ref(false)
-
-// Computed
-const hasRankings = computed(() => props.list.items.length >= 2)
 
 // Methods
 const handleExport = async (format: ExportFormat) => {
