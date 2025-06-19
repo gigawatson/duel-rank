@@ -24,7 +24,9 @@
           <span class="text-gray-600">Lost</span>
         </div>
         <div class="flex items-center space-x-2">
-          <div class="w-3 h-0.5 bg-gray-400"></div>
+          <svg width="12" height="2" class="flex-shrink-0">
+            <line x1="0" y1="1" x2="12" y2="1" stroke="#9ca3af" stroke-width="2" stroke-dasharray="2 1" />
+          </svg>
           <span class="text-gray-600">Skipped</span>
         </div>
       </div>
@@ -47,8 +49,65 @@
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
 
-        <!-- Comparison Edges -->
+        <!-- Comparison Edges with Gradient Lines and Subtle Arrows -->
+        <defs>
+          <!-- Subtle chevron-style arrow markers -->
+          <marker
+            id="chevron-arrow-red"
+            markerWidth="6"
+            markerHeight="6"
+            refX="3"
+            refY="3"
+            orient="auto"
+            markerUnits="strokeWidth"
+          >
+            <path
+              d="M1,1 L3,3 L1,5"
+              stroke="#dc2626"
+              stroke-width="1"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </marker>
+          
+          <marker
+            id="chevron-arrow-green"
+            markerWidth="6"
+            markerHeight="6"
+            refX="3"
+            refY="3"
+            orient="auto"
+            markerUnits="strokeWidth"
+          >
+            <path
+              d="M1,1 L3,3 L1,5"
+              stroke="#16a34a"
+              stroke-width="1"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </marker>
+          
+          <!-- Gradient definitions for winner->loser lines -->
+          <linearGradient
+            v-for="game in props.games.filter(g => g.winner && !g.skipped)"
+            :key="'grad-' + game.id"
+            :id="'gradient-' + game.id.replace(/[^a-zA-Z0-9]/g, '-')"
+            gradientUnits="userSpaceOnUse"
+            :x1="getWinnerNode(game)?.x || 0"
+            :y1="getWinnerNode(game)?.y || 0"
+            :x2="getLoserNode(game)?.x || 0"
+            :y2="getLoserNode(game)?.y || 0"
+          >
+            <stop offset="0%" stop-color="#16a34a" /> <!-- Green at winner -->
+            <stop offset="100%" stop-color="#dc2626" /> <!-- Red at loser -->
+          </linearGradient>
+        </defs>
+        
         <g>
+          <!-- Lines with gradients and subtle arrows -->
           <line
             v-for="edge in edges"
             :key="edge.id"
@@ -56,11 +115,11 @@
             :y1="edge.y1"
             :x2="edge.x2"
             :y2="edge.y2"
-            :stroke="edge.color"
+            :stroke="edge.isSkipped ? edge.color : (edge.color ? edge.color : `url(#gradient-${edge.id})`)"
             :stroke-width="edge.width"
-            stroke-opacity="0.7"
+            :stroke-dasharray="edge.isSkipped ? '4 3' : 'none'"
+            :marker-end="edge.isSkipped ? '' : (edge.arrowType === 'green' ? 'url(#chevron-arrow-green)' : 'url(#chevron-arrow-red)')"
             class="transition-all duration-300"
-            :class="{ 'stroke-opacity-100': hoveredItem && (edge.from === hoveredItem || edge.to === hoveredItem) }"
           />
         </g>
 
@@ -124,27 +183,31 @@
         </g>
 
         <!-- Hover Tooltip -->
-        <g v-if="hoveredItem && hoveredNode">
+        <g v-if="hoveredItem && hoveredNode && tooltipInfo">
           <rect
-            :x="hoveredNode.x - 60"
-            :y="hoveredNode.y - hoveredNode.radius - 40"
-            width="120"
-            height="30"
+            :x="tooltipInfo.x"
+            :y="tooltipInfo.y"
+            :width="tooltipInfo.width"
+            :height="tooltipInfo.height"
             rx="4"
             fill="rgba(0, 0, 0, 0.8)"
             class="drop-shadow-lg"
           />
+          <!-- Multi-line item label -->
           <text
-            :x="hoveredNode.x"
-            :y="hoveredNode.y - hoveredNode.radius - 28"
+            v-for="(line, index) in tooltipInfo.labelLines"
+            :key="index"
+            :x="tooltipInfo.centerX"
+            :y="tooltipInfo.y + 12 + 10 + (index * 12)"
             text-anchor="middle"
             class="text-xs font-medium fill-white"
           >
-            {{ getLabel(hoveredItem) }}
+            {{ line }}
           </text>
+          <!-- Stats line -->
           <text
-            :x="hoveredNode.x"
-            :y="hoveredNode.y - hoveredNode.radius - 16"
+            :x="tooltipInfo.centerX"
+            :y="tooltipInfo.y + 12 + 10 + (tooltipInfo.labelLines.length * 12) + 8"
             text-anchor="middle"
             class="text-xs fill-gray-300"
           >
@@ -251,8 +314,13 @@ const props = defineProps<Props>()
 // Component state
 const hoveredItem = ref<string | null>(null)
 const selectedItem = ref<string | null>(null)
+
+// Constants
 const svgWidth = 600
 const svgHeight = 400
+const minNodeRadius = 15
+const nodeRadiusPerWin = 2
+const tooltipMargin = 10
 
 /**
  * Calculate win/loss counts for each item
@@ -296,7 +364,7 @@ const nodes = computed(() => {
     const y = centerY + radius * Math.sin(angle)
     
     const stats = itemStats.value[item.id] || { wins: 0, losses: 0, comparisons: 0 }
-    const nodeRadius = Math.max(15, 8 + stats.wins * 2)
+    const nodeRadius = Math.max(minNodeRadius, 8 + stats.wins * nodeRadiusPerWin)
     
     return {
       id: item.id,
@@ -313,53 +381,131 @@ const nodes = computed(() => {
 })
 
 /**
- * Generate edges for comparisons
+ * Generate edges for comparisons with directional arrows
  */
 const edges = computed(() => {
   const nodeMap = new Map(nodes.value.map(node => [node.id, node]))
   
-  return props.games
+  
+  const result = props.games
     .filter(game => game.winner || game.skipped)
     .map(game => {
-      const fromNode = nodeMap.get(game.itemA)
-      const toNode = nodeMap.get(game.itemB)
+      const nodeA = nodeMap.get(game.itemA)
+      const nodeB = nodeMap.get(game.itemB)
       
-      if (!fromNode || !toNode) return null
+      if (!nodeA || !nodeB) {
+        return null
+      }
       
-      let color = 'oklch(70.7% 0.022 261.325)' // gray for skipped
-      let width = 2
+      // Determine winner and loser nodes for arrow direction
+      let winnerNode, loserNode, isSkipped = false
       
-      if (game.winner && !game.skipped) {
+      if (game.skipped || !game.winner) {
+        // For skipped games, no directional preference
+        winnerNode = nodeA
+        loserNode = nodeB
+        isSkipped = true
+      } else {
+        // Arrow points from winner to loser
         if (game.winner === game.itemA) {
-          color = 'oklch(72.3% 0.219 149.579)' // green - A won
+          winnerNode = nodeA
+          loserNode = nodeB
         } else {
-          color = 'oklch(63.7% 0.237 25.331)' // red - A lost
+          winnerNode = nodeB
+          loserNode = nodeA
         }
-        width = 3
+      }
+      
+      // Calculate arrow positioning (shorter line to accommodate arrowhead)
+      const dx = loserNode.x - winnerNode.x
+      const dy = loserNode.y - winnerNode.y
+      const length = Math.sqrt(dx * dx + dy * dy)
+      const unitX = dx / length
+      const unitY = dy / length
+      
+      // Different line lengths for arrows vs no arrows
+      const startX = winnerNode.x + unitX * (winnerNode.radius + 2)
+      const startY = winnerNode.y + unitY * (winnerNode.radius + 2)
+      
+      let endX, endY
+      if (isSkipped) {
+        // Skipped lines go full distance (no arrow to accommodate)
+        endX = loserNode.x - unitX * (loserNode.radius + 2)
+        endY = loserNode.y - unitY * (loserNode.radius + 2)
+      } else {
+        // Winner lines end before node edge (arrow fills the gap)
+        endX = loserNode.x - unitX * (loserNode.radius + 5)
+        endY = loserNode.y - unitY * (loserNode.radius + 5)
+      }
+      
+      // Simplified line weight and visibility system
+      let color, width = 1 // Default: small weight
+      let isVisible = true
+      let arrowType = 'red' // Default arrow type
+      
+      if (selectedItem.value || hoveredItem.value) {
+        const focusedNode = selectedItem.value || hoveredItem.value
+        
+        if (game.itemA === focusedNode || game.itemB === focusedNode) {
+          // Line connected to focused node: medium weight, appropriate color
+          width = 2
+          if (isSkipped) {
+            color = '#6b7280' // gray for skipped
+            arrowType = 'none'
+          } else if (focusedNode === game.winner) {
+            color = '#16a34a' // green - focused node won
+            arrowType = 'green'
+          } else {
+            color = '#dc2626' // red - focused node lost
+            arrowType = 'red'
+          }
+        } else {
+          // Line not connected to focused node: hide it
+          isVisible = false
+        }
+      } else {
+        // Default state: small weight, use gradient (no single color)
+        if (isSkipped) {
+          color = '#6b7280' // gray
+          arrowType = 'none'
+        } else {
+          color = null // Will use gradient
+          arrowType = 'red' // Arrow points to loser (red end of gradient)
+        }
       }
       
       return {
-        id: game.id,
+        id: game.id.replace(/[^a-zA-Z0-9]/g, '-'),
         from: game.itemA,
         to: game.itemB,
-        x1: fromNode.x,
-        y1: fromNode.y,
-        x2: toNode.x,
-        y2: toNode.y,
+        winner: game.winner,
+        x1: startX,
+        y1: startY,
+        x2: endX,
+        y2: endY,
         color,
-        width
+        width,
+        isSkipped,
+        isVisible,
+        arrowType
       }
     })
-    .filter(Boolean) as Array<{
+    .filter(edge => edge && edge.isVisible)
+  
+  return result as Array<{
       id: string
       from: string
       to: string
+      winner?: string
       x1: number
       y1: number
       x2: number
       y2: number
       color: string
       width: number
+      isSkipped: boolean
+      isVisible: boolean
+      arrowType: string
     }>
 })
 
@@ -368,6 +514,103 @@ const edges = computed(() => {
  */
 const hoveredNode = computed(() => {
   return hoveredItem.value ? nodes.value.find(node => node.id === hoveredItem.value) : null
+})
+
+/**
+ * Break text into lines that fit within max width
+ */
+const wrapText = (text: string, maxCharsPerLine: number): string[] => {
+  if (text.length <= maxCharsPerLine) return [text]
+  
+  const words = text.split(' ')
+  const lines: string[] = []
+  let currentLine = ''
+  
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word
+    
+    if (testLine.length <= maxCharsPerLine) {
+      currentLine = testLine
+    } else {
+      if (currentLine) {
+        lines.push(currentLine)
+        currentLine = word
+      } else {
+        // Single word is too long, truncate it
+        lines.push(word.substring(0, maxCharsPerLine - 3) + '...')
+        currentLine = ''
+      }
+    }
+  }
+  
+  if (currentLine) {
+    lines.push(currentLine)
+  }
+  
+  // Limit to 3 lines max
+  if (lines.length > 3) {
+    lines[2] = lines[2].substring(0, maxCharsPerLine - 3) + '...'
+    return lines.slice(0, 3)
+  }
+  
+  return lines
+}
+
+/**
+ * Calculate tooltip dimensions and position
+ */
+const tooltipInfo = computed(() => {
+  if (!hoveredItem.value || !hoveredNode.value) return null
+  
+  const itemLabel = props.getLabel(hoveredItem.value)
+  const stats = `${hoveredNode.value.winCount} wins • ${hoveredNode.value.lossCount} losses`
+  
+  // Set max tooltip width (80% of SVG width)
+  const maxTooltipWidth = Math.min(300, svgWidth * 0.8)
+  const maxCharsPerLine = Math.floor(maxTooltipWidth / 7) // ~7px per char
+  
+  // Wrap the item label into multiple lines if needed
+  const labelLines = wrapText(itemLabel, maxCharsPerLine)
+  
+  // Calculate actual tooltip dimensions
+  const longestLineLength = Math.max(
+    ...labelLines.map(line => line.length),
+    stats.length
+  )
+  
+  const tooltipWidth = Math.max(120, Math.min(maxTooltipWidth, longestLineLength * 7 + 40))
+  // Calculate content height: label lines + gap + stats line
+  const contentHeight = (labelLines.length * 12) + 8 + 12
+  const tooltipHeight = contentHeight + 24 // content + equal padding top/bottom (12px each)
+  
+  // Calculate position with smart edge detection
+  const nodeX = hoveredNode.value.x
+  const nodeY = hoveredNode.value.y - hoveredNode.value.radius - tooltipHeight - 5
+  
+  // Default: center tooltip above node
+  let tooltipX = nodeX - (tooltipWidth / 2)
+  
+  // Adjust if tooltip would overflow SVG boundaries
+  if (tooltipX < tooltipMargin) {
+    tooltipX = tooltipMargin
+  } else if (tooltipX + tooltipWidth > svgWidth - tooltipMargin) {
+    tooltipX = svgWidth - tooltipWidth - tooltipMargin
+  }
+  
+  // Adjust Y position if too close to top
+  let tooltipY = nodeY
+  if (tooltipY < tooltipMargin) {
+    tooltipY = hoveredNode.value.y + hoveredNode.value.radius + 15
+  }
+  
+  return {
+    x: tooltipX,
+    y: tooltipY,
+    width: tooltipWidth,
+    height: tooltipHeight,
+    centerX: tooltipX + (tooltipWidth / 2),
+    labelLines
+  }
 })
 
 /**
@@ -461,6 +704,21 @@ const clearHover = () => {
  */
 const selectItem = (itemId: string) => {
   selectedItem.value = selectedItem.value === itemId ? null : itemId
+}
+
+/**
+ * Get winner node for a game
+ */
+const getWinnerNode = (game: any) => {
+  return nodes.value.find(node => node.id === game.winner)
+}
+
+/**
+ * Get loser node for a game
+ */
+const getLoserNode = (game: any) => {
+  const loserId = game.itemA === game.winner ? game.itemB : game.itemA
+  return nodes.value.find(node => node.id === loserId)
 }
 </script>
 
