@@ -64,7 +64,7 @@ export function exportAsJSON(list: List, getLabelFn: (id: string) => string): st
  */
 export function exportAsCSV(list: List, getLabelFn: (id: string) => string): string {
   const data = prepareExportData(list, getLabelFn)
-  const { ranking, metadata } = data
+  const { ranking } = data
   
   // CSV Header
   let csv = 'Rank,Item,Confidence\n'
